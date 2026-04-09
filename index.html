@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AegisSun</title>
+<style>
+:root {
+  --gold:#f5c842;--gold-dim:rgba(245,200,66,0.6);--gold-faint:rgba(245,200,66,0.12);
+  --amber:#e08020;--green:#6dd68c;--blue:#7ec8f0;--red:#ff7060;
+  --bg:#0f0a04;--sur:rgba(255,255,255,0.05);--sur2:rgba(255,255,255,0.08);
+  --bdr:rgba(255,180,60,0.18);--bdr2:rgba(255,180,60,0.35);
+  --t:rgba(255,255,255,0.88);--t2:rgba(255,255,255,0.5);--t3:rgba(255,255,255,0.28);
+  --r:14px;--rs:9px;--nh:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.app{width:100%;max-width:430px;height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+/* HEADER */
+.hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;border-bottom:0.5px solid var(--bdr);background:rgba(15,10,4,0.98)}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-name{font-size:19px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+.hdr-r{display:flex;gap:8px;align-items:center}
+.ibtn{width:32px;height:32px;border-radius:50%;background:var(--gold-faint);border:.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.uvpill{background:rgba(255,120,20,0.15);border:.5px solid rgba(255,140,30,.35);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.uvdot{width:6px;height:6px;border-radius:50%;background:#ff7c20;flex-shrink:0;animation:pp 2s ease-in-out infinite}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:.4}}
+.uvtxt{color:var(--gold);font-size:11px;font-weight:600;white-space:nowrap}
+
+/* SCROLL BODY */
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.body::-webkit-scrollbar{display:none}
+
+/* NAV */
+.nav{flex-shrink:0;height:var(--nh);background:rgba(10,6,2,.97);border-top:.5px solid rgba(255,180,60,.12);display:flex;justify-content:space-around;align-items:center}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 16px}
+.nl{font-size:10px;color:var(--t3);font-weight:500}
+.ni.active .nl{color:var(--gold)}
+
+/* SCREENS */
+.sc{display:none;padding:10px 14px 14px}
+.sc.active{display:block}
+
+/* CAMERA */
+.camz{border-radius:var(--r);background:var(--sur);border:1.5px dashed var(--bdr);height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;position:relative;overflow:hidden;cursor:pointer;margin-bottom:9px}
+.camz.has-img{border-style:solid;border-color:var(--bdr2)}
+.scanline{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;top:20%;animation:sc 2.8s ease-in-out infinite}
+.camz.scanning .scanline{opacity:1}
+@keyframes sc{0%,100%{top:15%;opacity:.5}50%{top:82%;opacity:1}}
+.cn{position:absolute;width:18px;height:18px;border-color:var(--gold);border-style:solid;opacity:.6}
+.cn.tl{top:8px;left:8px;border-width:2px 0 0 2px;border-radius:4px 0 0 0}
+.cn.tr{top:8px;right:8px;border-width:2px 2px 0 0;border-radius:0 4px 0 0}
+.cn.bl{bottom:8px;left:8px;border-width:0 0 2px 2px;border-radius:0 0 0 4px}
+.cn.br{bottom:8px;right:8px;border-width:0 2px 2px 0;border-radius:0 0 4px 0}
+.chint{color:var(--gold-dim);font-size:11px}
+.csub{color:var(--t3);font-size:10px}
+#pimg{width:100%;height:100%;object-fit:cover;border-radius:12px;display:none}
+.camz.has-img #pimg{display:block}
+.camz.has-img .chint,.camz.has-img .csub,.camz.has-img .camico{display:none}
+#finput{display:none}
+
+/* ANALYZE BTN */
+.abtn{width:100%;background:linear-gradient(135deg,#f5c842,#e08020);border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;color:#1a0e00;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:9px;transition:opacity .2s,transform .15s}
+.abtn:disabled{opacity:.35;cursor:not-allowed}
+.abtn:not(:disabled):active{transform:scale(.98)}
+
+/* LABELS */
+.slbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-bottom:6px}
+
+/* COLOR BAR */
+.cbar-wrap{margin-bottom:9px}
+.cbar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.csel-name{font-size:10px;color:var(--gold);font-weight:500}
+.cbar{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.cbar::-webkit-scrollbar{display:none}
+.csw{width:32px;height:32px;border-radius:8px;flex-shrink:0;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s;position:relative}
+.csw.sel{border-color:var(--gold);transform:scale(1.15)}
+.csw.sel::after{content:'';position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+
+/* CHIPS */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px}
+.chip{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--rs);padding:7px 10px;cursor:pointer}
+.chip.on{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.38)}
+.clbl{color:var(--t3);font-size:9px;text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.cval{color:var(--gold);font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* RESULT */
+.rpanel{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:13px;display:none;margin-bottom:9px;animation:fu .4s ease}
+.rpanel.vis{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rtop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;cursor:pointer;border-radius:8px;padding:4px;margin:-4px;transition:background .18s}
+.rtop:active{background:rgba(126,200,240,.07)}
+.rtag{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.rtap{font-size:9px;color:rgba(126,200,240,.5);font-style:italic}
+.upfn{font-size:48px;font-weight:700;color:var(--gold);line-height:1}
+.upfu{font-size:13px;color:var(--gold-dim);margin-left:3px}
+.upfd{font-size:11px;margin-top:2px}
+.upfr{font-size:10.5px;color:var(--t3);margin-top:3px;font-style:italic}
+.badge{padding:4px 10px;border-radius:16px;font-size:11px;font-weight:600}
+.be{background:rgba(109,214,140,.14);border:.5px solid rgba(109,214,140,.3);color:var(--green)}
+.bh{background:rgba(245,200,66,.12);border:.5px solid rgba(245,200,66,.28);color:var(--gold)}
+.bm{background:rgba(224,128,32,.14);border:.5px solid rgba(224,128,32,.28);color:var(--amber)}
+.bl{background:rgba(255,112,96,.12);border:.5px solid rgba(255,112,96,.28);color:var(--red)}
+.mwrap{position:relative;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.mfill{height:100%;border-radius:4px;background:linear-gradient(90deg,#e05050,#f5c842,#6dd68c);transition:width .9s cubic-bezier(.34,1.56,.64,1);width:0}
+.mband{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.14);border-left:1px solid rgba(255,255,255,.35);border-right:1px solid rgba(255,255,255,.35);transition:left .9s ease,width .9s ease}
+.mlbls{display:flex;justify-content:space-between;margin-bottom:8px}
+.ml{font-size:9px;color:var(--t3)}
+.moetxt{font-size:9px;color:var(--t3);text-align:center;font-style:italic;margin-bottom:10px}
+.ftitle{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;border-top:.5px solid rgba(255,255,255,.06);padding-top:9px}
+.frow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.fdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ftxt{font-size:11px;color:var(--t2);flex:1}
+.fsc{font-size:11px;font-weight:600}
+.sh{color:var(--green)}.sm{color:var(--gold)}.sl{color:var(--amber)}.sn{color:var(--red)}
+
+/* OUTFIT */
+.oscore{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:13px;text-align:center;margin-bottom:9px}
+.otag{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.onum{font-size:52px;font-weight:700;line-height:1}
+.osub{font-size:12px;margin-top:2px;margin-bottom:10px}
+.mbar{height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.mbar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#e05050,#f5c842,#6dd68c);transition:width .9s cubic-bezier(.34,1.56,.64,1);width:0}
+.glist{display:flex;flex-direction:column;gap:7px;margin-bottom:9px}
+.gitem{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:9px 11px;display:flex;align-items:center;gap:9px;cursor:pointer}
+.gsw{width:36px;height:36px;border-radius:8px;flex-shrink:0}
+.gname{font-size:12px;font-weight:500}
+.gsub{font-size:10px;color:var(--t3);margin-top:1px}
+.gnum{font-size:15px;font-weight:600;text-align:right}
+.ggrade{font-size:9px;opacity:.55;text-align:right}
+.addg{width:100%;background:transparent;border:1px dashed var(--bdr);border-radius:var(--r);padding:10px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;color:var(--gold-dim);font-size:11px;font-family:inherit}
+.arow{display:flex;gap:7px;margin-bottom:9px}
+.abtn2{flex:1;padding:10px;border-radius:var(--rs);border:.5px solid;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;background:transparent}
+.ag{border-color:rgba(109,214,140,.3);color:var(--green)}
+.ab{border-color:rgba(126,200,240,.28);color:var(--blue)}
+.wcard{background:rgba(255,112,96,.07);border:.5px solid rgba(255,112,96,.18);border-radius:var(--rs);padding:9px 11px;display:flex;gap:8px;align-items:flex-start;margin-bottom:9px}
+.wtxt{color:rgba(255,160,130,.72);font-size:11px;line-height:1.55}
+
+/* HISTORY */
+.hlist{display:flex;flex-direction:column;gap:7px}
+.hitem{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:9px 11px;display:flex;align-items:center;gap:9px}
+.hsw{width:38px;height:38px;border-radius:8px;flex-shrink:0}
+.hname{font-size:12px;font-weight:500}
+.hdate{font-size:10px;color:var(--t3);margin-top:1px}
+.hupf{font-size:17px;font-weight:700;text-align:right}
+.hgrd{font-size:9px;opacity:.5;text-align:right}
+.delbtn{width:30px;height:30px;border-radius:50%;background:rgba(255,112,96,.1);border:.5px solid rgba(255,112,96,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+
+/* LEARN */
+.lcards{display:flex;flex-direction:column;gap:8px}
+.lcard{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:12px 13px}
+.ltitle{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:7px}
+.lbody{font-size:11px;color:var(--t2);line-height:1.65}
+.lrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px solid rgba(255,255,255,.05)}
+.lrow:last-child{border-bottom:none}
+.lk{font-size:11px;color:var(--t2)}
+.lv{font-size:11px;font-weight:600}
+.empty{text-align:center;padding:36px 20px;color:var(--t3);font-size:12px;line-height:1.8}
+
+/* PICKER MODAL (bottom sheet) */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.moverlay.open{opacity:1;pointer-events:all}
+.msheet{width:100%;max-width:430px;background:#1e1408;border-top:.5px solid var(--bdr2);border-radius:20px 20px 0 0;padding:15px 17px 30px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.1,.64,1);max-height:70vh;overflow-y:auto}
+.moverlay.open .msheet{transform:translateY(0)}
+.mhandle{width:32px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 13px}
+.mtitle{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:11px}
+.mopt{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(255,255,255,.05);cursor:pointer}
+.mopt:last-child{border-bottom:none}
+.moptlbl{font-size:13px;color:var(--t2)}
+.moptsel{font-size:13px;font-weight:600;color:var(--gold)}
+
+/* ADVISORY MODAL (center) */
+.aoverlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:250;display:flex;align-items:center;justify-content:center;padding:20px 16px;opacity:0;pointer-events:none;transition:opacity .28s}
+.aoverlay.open{opacity:1;pointer-events:all}
+.amodal{width:100%;max-width:400px;background:#111a22;border:.5px solid rgba(126,200,240,.25);border-radius:20px;padding:20px 18px 18px;transform:scale(.94) translateY(10px);transition:transform .3s cubic-bezier(.34,1.1,.64,1);overflow-y:auto;max-height:88vh;position:relative}
+.aoverlay.open .amodal{transform:scale(1) translateY(0)}
+.aclose{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.aicon{display:flex;justify-content:center;margin-bottom:12px}
+.aiconc{width:48px;height:48px;border-radius:50%;background:rgba(126,200,240,.12);border:.5px solid rgba(126,200,240,.3);display:flex;align-items:center;justify-content:center}
+.atitle{font-size:18px;font-weight:700;color:var(--blue);text-align:center;margin-bottom:5px}
+.asum{text-align:center;font-size:12px;color:var(--t3);margin-bottom:16px;line-height:1.5}
+.asec-title{font-size:9px;text-transform:uppercase;letter-spacing:1.1px;color:var(--t3);font-weight:600;margin-bottom:8px}
+
+/* SKIN TYPE */
+.stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.stbtn{background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 5px;cursor:pointer;text-align:center}
+.stbtn.sel{border-color:var(--gold);background:rgba(245,200,66,.1)}
+.stsw{width:28px;height:14px;border-radius:4px;margin:0 auto 5px;border:.5px solid rgba(0,0,0,.2)}
+.stlbl{font-size:9px;color:var(--t2);line-height:1.4}
+.stbtn.sel .stlbl{color:var(--gold)}
+
+/* EXPOSURE CARD */
+.expcard{background:rgba(245,200,66,.06);border:.5px solid rgba(245,200,66,.22);border-radius:var(--r);padding:12px 6px;margin-bottom:14px}
+.exphdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.exptitle{font-size:11px;font-weight:600;color:var(--gold)}
+.exprow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:.5px solid rgba(255,255,255,.05)}
+.exprow:last-of-type{border-bottom:none}
+.explbl{font-size:11px;color:var(--t2)}
+.expval{font-size:13px;font-weight:600}
+.expnote{font-size:10px;color:var(--t3);margin-top:8px;line-height:1.55;font-style:italic}
+
+/* ADVISORY TIPS */
+.tiprow{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:.5px solid rgba(255,255,255,.05)}
+.tiprow:last-child{border-bottom:none}
+.tipdot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px;opacity:.7}
+.tiptxt{font-size:11px;color:var(--t2);line-height:1.55}
+.adisclaim{background:rgba(255,255,255,.03);border:.5px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;margin-top:12px}
+.adisclaim p{font-size:10px;color:var(--t3);line-height:1.6;font-style:italic}
+.adismiss{width:100%;margin-top:14px;padding:12px;border-radius:var(--r);background:rgba(126,200,240,.12);border:.5px solid rgba(126,200,240,.3);color:var(--blue);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+
+/* HEALTH PROFILE SCREEN */
+.hpcard{background:var(--sur);border:.5px solid var(--bdr);border-radius:var(--r);padding:13px;margin-bottom:9px}
+.hpcard-title{font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.hptoggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:.5px solid rgba(255,255,255,.05)}
+.hptoggle-row:last-of-type{border-bottom:none}
+.hptoggle-info{flex:1;min-width:0}
+.hptoggle-lbl{font-size:12px;color:var(--t);font-weight:500}
+.hptoggle-sub{font-size:10px;color:var(--t3);margin-top:2px;line-height:1.4}
+.hptoggle-sub.warn{color:rgba(255,112,96,.7)}
+.toggle{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.15);position:relative;cursor:pointer;flex-shrink:0;margin-left:10px;transition:background .2s}
+.toggle.on{background:rgba(245,200,66,.4);border-color:rgba(245,200,66,.6)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.4);transition:left .2s,background .2s}
+.toggle.on .toggle-knob{left:20px;background:var(--gold)}
+.uvlife-card{background:rgba(126,200,240,0.06);border:0.5px solid rgba(126,200,240,0.2);border-radius:var(--r);padding:12px 13px;margin-bottom:10px}
+.uvlife-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#7ec8f0;margin-bottom:10px}
+.uvlife-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.uvlife-lbl{font-size:11px;color:var(--t2);min-width:52px;flex-shrink:0}
+.uvlife-inp{flex:1;background:rgba(255,255,255,.05);border:.5px solid rgba(255,180,60,.2);border-radius:8px;padding:6px 9px;color:var(--t);font-size:12px;font-family:inherit;outline:none}
+.uvlife-inp:focus{border-color:rgba(255,180,60,.5)}
+.uvloc-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.uvloc-item{display:grid;grid-template-columns:1fr 60px 28px;gap:5px;align-items:center}
+.uvloc-item input{background:rgba(255,255,255,.05);border:.5px solid rgba(255,180,60,.2);border-radius:7px;padding:5px 8px;color:var(--t);font-size:11px;font-family:inherit;outline:none;width:100%}
+.uvloc-item input:focus{border-color:rgba(255,180,60,.5)}
+.uvloc-remove{width:22px;height:22px;border-radius:50%;background:rgba(255,80,60,.12);border:.5px solid rgba(255,80,60,.25);color:#ff7060;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;line-height:1}
+.addloc-btn{background:rgba(126,200,240,.08);border:.5px solid rgba(126,200,240,.25);border-radius:8px;padding:6px 12px;color:#7ec8f0;font-size:11px;cursor:pointer;width:100%;text-align:center}
+.uvlife-score{background:rgba(255,255,255,.04);border-radius:9px;padding:10px 12px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.uvlife-score-lbl{font-size:10px;color:var(--t3)}
+.uvlife-score-val{font-size:22px;font-weight:700}
+.uvlife-score-tier{font-size:10px;font-weight:600;margin-top:1px}
+.uvlife-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden}
+.uvlife-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.uvlife-status{font-size:10px;color:var(--t3);margin-top:6px;line-height:1.5}
+.hpnotes{width:100%;background:rgba(255,255,255,.04);border:.5px solid var(--bdr);border-radius:var(--rs);padding:9px 11px;color:var(--t);font-size:12px;font-family:inherit;resize:none;height:72px;margin-top:4px;outline:none}
+.hpnotes:focus{border-color:var(--bdr2)}
+.hpnotes::placeholder{color:var(--t3)}
+.hpalert{background:rgba(255,112,96,.08);border:.5px solid rgba(255,112,96,.22);border-radius:var(--rs);padding:9px 12px;display:flex;gap:8px;align-items:flex-start;margin-bottom:9px}
+.hpalert-txt{font-size:11px;color:rgba(255,160,130,.8);line-height:1.55}
+/* med impact badge in advisory */
+.medimpact{background:rgba(255,112,96,.12);border:.5px solid rgba(255,112,96,.3);border-radius:var(--rs);padding:9px 12px;margin-bottom:12px}
+.medimpact-title{font-size:10px;color:rgba(255,160,130,.9);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.medimpact-row{display:flex;align-items:flex-start;gap:7px;padding:4px 0}
+.medimpact-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,112,96,.7);flex-shrink:0;margin-top:4px}
+.medimpact-txt{font-size:11px;color:rgba(255,160,130,.75);line-height:1.45}
+
+.loverlay{position:fixed;inset:0;background:rgba(15,10,4,.93);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .25s}
+.loverlay.active{opacity:1;pointer-events:all}
+.lsun{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,var(--gold) 30%,var(--amber) 100%);animation:sp 1.4s ease-in-out infinite}
+@keyframes sp{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,200,66,.4)}50%{transform:scale(1.18);box-shadow:0 0 0 18px rgba(245,200,66,0)}}
+.ltxt{color:var(--gold-dim);font-size:13px}
+/* UV OVERRIDE ROW */
+.uvrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:.5px solid rgba(255,255,255,.07)}
+.uvrow-lbl{font-size:11px;font-weight:600;color:var(--gold)}
+.uvrow-ctrl{display:flex;align-items:center;gap:8px}
+.uvrow-tag{font-size:10px;color:var(--t3);font-style:italic}
+.uvinput{width:52px;background:rgba(255,255,255,.07);border:.5px solid rgba(245,200,66,.35);border-radius:6px;padding:4px 7px;color:var(--gold);font-size:13px;font-weight:600;font-family:inherit;text-align:center;outline:none;-moz-appearance:textfield}
+.uvinput::-webkit-outer-spin-button,.uvinput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.uvinput:focus{border-color:var(--gold)}
+.exp-section-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;font-weight:600;margin-bottom:5px}
+.spf-note{font-size:9px;color:var(--t3);font-style:italic;margin:5px 0 0;line-height:1.5}
+/* SPF GRAPH TOGGLES */
+.spftoggle-group{margin-bottom:2px}
+.spftoggle-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;font-weight:600;margin-bottom:5px}
+.spftoggle-row{display:flex;gap:5px;flex-wrap:wrap}
+.spftog{font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;border:.5px solid rgba(255,255,255,.12);color:var(--t3);cursor:pointer;transition:all .15s;background:rgba(255,255,255,.04)}
+.spftog.active{border-color:var(--gold);color:var(--gold);background:rgba(245,200,66,.1)}
+.spftog[data-spf="15"].active{border-color:#7ec8f0;color:#7ec8f0;background:rgba(126,200,240,.1)}
+.spftog[data-spf="0"].active{border-color:#ff5040;color:#ff5040;background:rgba(255,80,64,.1)}
+.spftog[data-spf="30"].active{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,.1)}
+.spftog[data-spf="50"].active{border-color:#6dd68c;color:#6dd68c;background:rgba(109,214,140,.1)}
+.spftog[data-cond="dry"].active{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,.1)}
+.spftog[data-cond="heat"].active{border-color:#e08020;color:#e08020;background:rgba(224,128,32,.1)}
+.spftog[data-ucond="dry"].active{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,.1)}
+.spftog[data-ucond="wet"].active{border-color:#7ec8f0;color:#7ec8f0;background:rgba(126,200,240,.1)}
+.spftog[data-ucond="stretch"].active{border-color:#e08020;color:#e08020;background:rgba(224,128,32,.1)}
+.spftog[data-ucond="worn"].active{border-color:#888;color:#aaa;background:rgba(150,150,150,.08)}
+.spftog[data-upf="10"].active{border-color:#ff7060;color:#ff7060;background:rgba(255,112,96,.1)}
+.spftog[data-upf="0"].active{border-color:#ff4030;color:#ff4030;background:rgba(255,64,48,.1)}
+#upf-scanned-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-faint)}
+.spftog[data-upf="15"].active{border-color:#e08020;color:#e08020;background:rgba(224,128,32,.1)}
+.spftog[data-upf="25"].active{border-color:#f0a030;color:#f0a030;background:rgba(240,160,48,.1)}
+.spftog[data-upf="30"].active{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,.1)}
+.spftog[data-upf="50"].active{border-color:#6dd68c;color:#6dd68c;background:rgba(109,214,140,.1)}
+.spfgraph-card{background:rgba(255,255,255,.03);border:.5px solid var(--bdr);border-radius:var(--r);padding:12px 12px 10px;margin-bottom:14px}
+#spfCanvas{width:100%;height:auto;display:block;border-radius:6px}
+.spfgraph-legend{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.spfleg-row{display:flex;align-items:center;gap:7px}
+.spfleg-dot{width:10px;height:3px;border-radius:2px;flex-shrink:0}
+.spfleg-row span{font-size:10px;color:var(--t3)}
+.spfgraph-facts{display:flex;gap:6px;margin-top:10px}
+.spffact{flex:1;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.07);border-radius:8px;padding:7px 6px;text-align:center}
+.spffact-val{display:block;font-size:13px;font-weight:700;color:var(--gold)}
+.spffact-lbl{display:block;font-size:9px;color:var(--t3);margin-top:2px;line-height:1.3}
+.spfgraph-note{font-size:10px;color:var(--t3);margin-top:10px;line-height:1.6;font-style:italic}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LOADING -->
+<div class="loverlay" id="loverlay">
+  <div class="lsun"></div>
+  <div class="ltxt">Analyzing fabric...</div>
+</div>
+
+<!-- PICKER MODAL -->
+<div class="moverlay" id="moverlay" onclick="closePicker(event)">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="mtitle"></div>
+    <div id="mopts"></div>
+  </div>
+</div>
+
+<!-- ADVISORY MODAL -->
+<div class="aoverlay" id="aoverlay" onclick="closeAdv(event)">
+  <div class="amodal">
+    <div class="aclose" onclick="closeAdvDirect()">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 1l9 9M10 1L1 10" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="aicon"><div class="aiconc">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="#7ec8f0" stroke-width="1.3"/><path d="M11 10v6M11 8v.5" stroke="#7ec8f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div></div>
+    <div class="atitle">Sun Safety Advisory</div>
+    <div class="asum" id="asum"></div>
+    <div class="medimpact" id="medimpact" style="display:none">
+      <div class="medimpact-title">Medication effect on exposure</div>
+      <div id="medimpact-list"></div>
+    </div>
+    <div class="asec-title">Your skin type</div>
+    <div class="stgrid" id="stgrid"></div>
+    <div class="expcard">
+      <div class="exphdr">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#f5c842" stroke-width="1.2"/><path d="M7.5 4.5v3.5l2 1.2" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="exptitle">Protection &amp; safe exposure &mdash; combined</span>
+      </div>
+      <div class="uvrow">
+        <span class="uvrow-lbl">UV Index</span>
+        <div class="uvrow-ctrl">
+          <div class="uvrow-tag" id="uvrow-tag">8 &mdash; Very High</div>
+          <input type="number" id="uvinput" class="uvinput" min="1" max="20" value="8" oninput="onUVChange(this.value)" inputmode="numeric">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:-6px 0 8px">
+        <div id="uv-source-note" style="font-size:10px;color:rgba(255,255,255,0.3);font-style:italic">Detecting your location&hellip;</div>
+        <div id="uv-mode-toggle" style="display:none;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,180,60,0.2);border-radius:20px;display:none;align-items:center;padding:2px;gap:1px">
+          <div id="uv-btn-current" onclick="setUVMode('current')" style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:16px;cursor:pointer;background:rgba(245,200,66,0.2);color:var(--gold)">Now</div>
+          <div id="uv-btn-peak" onclick="setUVMode('peak')" style="font-size:10px;font-weight:500;padding:3px 9px;border-radius:16px;cursor:pointer;color:rgba(255,255,255,0.4)">Peak</div>
+        </div>
+      </div>
+      <div id="expTimeDisplay"></div>
+      <div class="spftoggle-group" style="margin-top:8px">
+        <div class="spftoggle-lbl">SPF sunscreen</div>
+        <div class="spftoggle-row">
+          <div class="spftog active" data-spf="0" onclick="setSPFToggle(this,0)">None</div>
+          <div class="spftog" data-spf="15" onclick="setSPFToggle(this,15)">SPF 15</div>
+          <div class="spftog" data-spf="30" onclick="setSPFToggle(this,30)">SPF 30</div>
+          <div class="spftog" data-spf="50" onclick="setSPFToggle(this,50)">SPF 50</div>
+        </div>
+      </div>
+      <div class="spftoggle-group" style="margin-top:6px">
+        <div class="spftoggle-lbl">UPF garment</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div class="spftog upftog active" id="upf-none-btn" onclick="setUPFCustom(0)">None</div>
+          <div class="spftog upftog" id="upf-scanned-btn" onclick="setUPFCustom(state.lastUpf||15)" style="display:none">Scanned: <span id="upf-scanned-val">--</span></div>
+          <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,180,60,0.2);border-radius:8px;padding:4px 8px;height:30px">
+            <span style="font-size:10px;color:rgba(255,255,255,0.4)">UPF</span>
+            <input id="upf-custom-input" type="number" min="1" max="500" placeholder="--"
+              style="width:40px;background:none;border:none;outline:none;color:var(--gold);font-size:13px;font-weight:600;text-align:center;padding:0"
+              oninput="onUPFInputChange(this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="spftoggle-group" style="margin-top:6px">
+        <div class="spftoggle-lbl">Conditions</div>
+        <div class="spftoggle-row">
+          <div class="spftog active" data-cond="dry"  onclick="setCondToggle(this,'dry')">Dry</div>
+          <div class="spftog" data-cond="heat" onclick="setCondToggle(this,'heat')">Heat</div>
+          <div class="spftog" data-cond="wet"  onclick="setCondToggle(this,'wet')">Wet / Sweat</div>
+        </div>
+      </div>
+      <canvas id="combinedCanvas" width="340" height="260" style="display:block;width:calc(100% + 12px);margin:0 -6px 6px"></canvas>
+      <div class="spfgraph-legend" id="combinedLegend"></div>
+      <div class="spfgraph-note" id="expnote"></div>
+    </div>
+
+    <div class="asec-title">Protection tips</div>
+    <div id="atips"></div>
+    <div class="adisclaim"><p>AegisSun estimates UPF visually without lab testing. Exposure times use published dermatology MED thresholds and are estimates only - individual response varies. Not medical advice. Always use sunscreen on exposed skin.</p></div>
+    <button class="adismiss" onclick="closeAdvDirect()">Got it</button>
+  </div>
+</div>
+
+<input type="file" id="finput" accept="image/*" capture="environment" onchange="handleFile(this)">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <circle cx="13" cy="13" r="6" fill="#f5c842"/>
+      <path d="M13 1v3M13 22v3M1 13h3M22 13h3M4.5 4.5l2.1 2.1M18.4 18.4l2.1 2.1M18.4 4.5l-2.1 2.1M6.6 18.4l-2.1 2.1" stroke="#f5c842" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-name" id="hdrtitle">AegisSun</span>
+  </div>
+  <div class="hdr-r">
+    <div class="uvpill" onclick="uvInfo()">
+      <div class="uvdot"></div>
+      <span class="uvtxt">UV 8 &middot; Very High</span>
+    </div>
+    <div class="ibtn" onclick="document.getElementById('finput').click()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v8M4 5l3-3.5L10 5M2 11.5h10" stroke="#f5c842" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- SCROLL BODY -->
+<div class="body">
+
+  <!-- SCAN -->
+  <div class="sc active" id="sc-scan">
+    <div class="camz" id="camz" onclick="document.getElementById('finput').click()">
+      <div class="cn tl"></div><div class="cn tr"></div>
+      <div class="cn bl"></div><div class="cn br"></div>
+      <div class="scanline"></div>
+      <img id="pimg" src="" alt="">
+      <svg class="camico" width="32" height="32" viewBox="0 0 34 34" fill="none" style="opacity:.35">
+        <rect x="3" y="8" width="28" height="20" rx="5" stroke="#f5c842" stroke-width="1.4"/>
+        <circle cx="17" cy="18" r="6" stroke="#f5c842" stroke-width="1.4"/>
+        <path d="M12 8l1.8-3h6.4L22 8" stroke="#f5c842" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <span class="chint">Tap to photograph clothing</span>
+      <span class="csub">or use the upload button above</span>
+    </div>
+
+    <button class="abtn" id="abtn" onclick="doAnalyze()" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#1a0e00" stroke-width="1.2"/><path d="M4.5 7.5l2 2 4-4" stroke="#1a0e00" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Analyze UPF Protection
+    </button>
+
+    <div class="slbl">Fabric color &mdash; tap to match</div>
+    <div class="cbar-wrap">
+      <div class="cbar-top">
+        <span class="slbl" style="margin-bottom:0">Color</span>
+        <span class="csel-name" id="cselname">Dark Navy</span>
+      </div>
+      <div class="cbar" id="cbar"></div>
+    </div>
+
+    <div class="slbl">Refine accuracy (optional)</div>
+    <div class="cgrid">
+      <div class="chip on" onclick="openPicker('fabric')"><div class="clbl">Fabric</div><div class="cval" id="v-fabric">Cotton</div></div>
+      <div class="chip" onclick="openPicker('stretch')"><div class="clbl">Stretch</div><div class="cval" id="v-stretch">Normal</div></div>
+      <div class="chip" onclick="openPicker('condition')"><div class="clbl">Condition</div><div class="cval" id="v-condition">Dry &middot; New</div></div>
+      <div class="chip" onclick="openPicker('layers')"><div class="clbl">Layers</div><div class="cval" id="v-layers">Single</div></div>
+      <div class="chip" onclick="openPicker('garment')"><div class="clbl">Type</div><div class="cval" id="v-garment">Shirt</div></div>
+      <div class="chip" onclick="openPicker('fit')"><div class="clbl">Fit</div><div class="cval" id="v-fit">Regular</div></div>
+    </div>
+
+    <div style="margin-bottom:9px">
+      <button onclick="openAdvisory()" style="width:100%;background:rgba(245,200,66,0.1);border:0.5px solid rgba(245,200,66,0.35);border-radius:var(--r);padding:11px;font-size:13px;font-weight:600;color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#f5c842" stroke-width="1.2"/><path d="M7 4.5v3.5l2 1.2" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        View Sun Advisory &amp; Exposure Times
+      </button>
+    </div>
+    <div class="rpanel" id="rpanel">
+      <div class="rtop" onclick="openAdvisory()">
+        <div>
+          <div class="rtag">UPF Estimate &nbsp;<span class="rtap">tap for advisory</span></div>
+          <div><span class="upfn" id="upfn">--</span><span class="upfu">UPF</span></div>
+          <div class="upfd" id="upfd"></div>
+          <div class="upfr" id="upfr"></div>
+        </div>
+        <span class="badge be" id="upfbadge">--</span>
+      </div>
+      <div class="mwrap">
+        <div class="mfill" id="mfill"></div>
+        <div class="mband" id="mband"></div>
+      </div>
+      <div class="mlbls">
+        <span class="ml">Low 15</span><span class="ml">Mod 25</span>
+        <span class="ml">High 40</span><span class="ml">Max 50+</span>
+      </div>
+      <div class="moetxt">&#177; margin reflects visual estimation uncertainty</div>
+      <div class="ftitle">Analysis factors</div>
+      <div id="flist"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="sc" id="sc-history">
+    <div class="hlist" id="hlist">
+      <div class="empty">No scans yet.<br>Photograph a garment to get started.</div>
+    </div>
+  </div>
+
+  <!-- OUTFIT -->
+  <div class="sc" id="sc-outfit">
+    <div class="oscore">
+      <div class="otag">Full outfit protection</div>
+      <div class="onum" id="oscore" style="color:var(--gold)">--</div>
+      <div class="osub" id="osub" style="color:var(--t3)">Add garments below</div>
+      <div class="mbar"><div class="mbar-fill" id="omfill"></div></div>
+      <div class="mlbls">
+        <span class="ml">Low</span><span class="ml">Mod</span>
+        <span class="ml">High</span><span class="ml">Max</span>
+      </div>
+    </div>
+    <div class="glist" id="glist">
+      <button class="addg" onclick="goScan()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="#f5c842" stroke-width="1.3" stroke-linecap="round" opacity=".7"/></svg>
+        Scan a garment to add it here
+      </button>
+    </div>
+    <div class="arow">
+      <button class="abtn2 ag" onclick="saveOutfit()">Save outfit</button>
+      <button class="abtn2 ab" onclick="shareOutfit()">Share</button>
+    </div>
+    <div class="wcard">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M8 2L1 14h14L8 2z" stroke="#ff8060" stroke-width="1.1" stroke-linejoin="round"/><path d="M8 6v4M8 12v1" stroke="#ff8060" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span class="wtxt">Face, hands, and neck still need sunscreen on high UV days.</span>
+    </div>
+  </div>
+
+  <!-- LEARN -->
+  <div class="sc" id="sc-learn">
+    <div class="lcards">
+      <div class="lcard">
+        <div class="ltitle">What is UPF?</div>
+        <div class="lbody">UPF measures how much UV radiation a fabric blocks. UPF 50 means only 2% of UV passes through. Higher is always better.</div>
+      </div>
+      <div class="lcard">
+        <div class="ltitle">About the margin of error</div>
+        <div class="lbody">AegisSun estimates UPF visually without lab spectrometry. The &#177; range reflects real uncertainty from weave density, dye chemistry, and fabric finish that photos cannot fully capture. Use as a guide, not a certified rating.</div>
+      </div>
+      <div class="lcard">
+        <div class="ltitle">Rating scale</div>
+        <div class="lrow"><span class="lk">UPF 15-24</span><span class="lv" style="color:var(--amber)">Good</span></div>
+        <div class="lrow"><span class="lk">UPF 25-39</span><span class="lv" style="color:var(--gold)">Very Good</span></div>
+        <div class="lrow"><span class="lk">UPF 40-50</span><span class="lv" style="color:var(--green)">Excellent</span></div>
+        <div class="lrow"><span class="lk">UPF 50+</span><span class="lv" style="color:var(--green)">Maximum</span></div>
+      </div>
+      <div class="lcard">
+        <div class="ltitle">Boost your protection</div>
+        <div class="lbody" style="display:flex;flex-direction:column;gap:7px">
+          <div><strong style="color:var(--t)">Darker colors</strong> absorb more UV &mdash; navy, black, deep red beat white or pastels.</div>
+          <div><strong style="color:var(--t)">Tighter weaves</strong> block more UV. Hold fabric to light &mdash; if you see through it clearly, protection is low.</div>
+          <div><strong style="color:var(--t)">Wet fabric</strong> loses up to 50% UPF &mdash; especially critical for swimwear.</div>
+          <div><strong style="color:var(--t)">Loose fit</strong> maintains protection better than stretched fabric.</div>
+          <div><strong style="color:var(--t)">Gloves and socks</strong> count &mdash; UV hits hands and feet too.</div>
+        </div>
+      </div>
+      <div class="lcard">
+        <div class="ltitle">UV Index guide</div>
+        <div class="lrow"><span class="lk">1-2 Low</span><span class="lv" style="color:var(--green)">Minimal risk</span></div>
+        <div class="lrow"><span class="lk">3-5 Moderate</span><span class="lv" style="color:var(--gold)">Seek shade midday</span></div>
+        <div class="lrow"><span class="lk">6-7 High</span><span class="lv" style="color:var(--amber)">Cover up + sunscreen</span></div>
+        <div class="lrow"><span class="lk">8-10 Very High</span><span class="lv" style="color:var(--red)">Extra protection needed</span></div>
+        <div class="lrow"><span class="lk">11+ Extreme</span><span class="lv" style="color:var(--red)">Avoid midday sun</span></div>
+      </div>
+      <div style="height:4px"></div>
+    </div>
+  </div>
+
+  <!-- HEALTH PROFILE -->
+  <div class="sc" id="sc-health">
+    <div class="uvlife-card">
+      <div class="uvlife-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#7ec8f0" stroke-width="1.2"/><path d="M7 3v4l2.5 1.5" stroke="#7ec8f0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Lifetime UV Exposure Profile
+      </div>
+      <div class="uvlife-row">
+        <span class="uvlife-lbl">Age</span>
+        <input class="uvlife-inp" id="uvlife-age" type="number" min="1" max="110" placeholder="Your age" oninput="onLifetimeChange()">
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-bottom:6px">Where have you lived? (city or region + years)</div>
+      <div class="uvloc-list" id="uvloc-list"></div>
+      <div class="addloc-btn" onclick="addLocationEntry()">+ Add location</div>
+      <div class="uvlife-score" id="uvlife-score" style="display:none">
+        <div>
+          <div class="uvlife-score-lbl">Estimated lifetime UV dose</div>
+          <div class="uvlife-score-tier" id="uvlife-tier"></div>
+          <div class="uvlife-status" id="uvlife-status"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="uvlife-score-val" id="uvlife-score-val">--</div>
+          <div style="font-size:9px;color:var(--t3)">of lifetime</div>
+        </div>
+      </div>
+      <div class="uvlife-bar" id="uvlife-bar" style="display:none">
+        <div class="uvlife-bar-fill" id="uvlife-bar-fill"></div>
+      </div>
+    </div>
+    <div class="hpalert">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M8 2L1 14h14L8 2z" stroke="#ff8060" stroke-width="1.1" stroke-linejoin="round"/><path d="M8 6v4M8 12v1" stroke="#ff8060" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span class="hpalert-txt">This information helps estimate safer exposure times only. It is not medical advice. Always follow your doctor's guidance on sun exposure.</span>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="4" width="12" height="9" rx="2" stroke="#f5c842" stroke-width="1.2"/><path d="M5 4V3a2 2 0 0 1 4 0v1" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/><path d="M5 8h4M7 6v4" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Immunosuppressants &amp; Chemotherapy
+      </div>
+      <div id="meds-immune"></div>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#f5c842" stroke-width="1.2"/><path d="M4.5 7h5M7 4.5v5" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Antibiotics &amp; Antimicrobials
+      </div>
+      <div id="meds-antibiotic"></div>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M4 4l3-3 3 3M4 10l3 3 3-3" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cardiovascular &amp; Blood Pressure
+      </div>
+      <div id="meds-cardio"></div>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2C4.2 2 2 4.2 2 7s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5z" stroke="#f5c842" stroke-width="1.2"/><path d="M7 5v2l1.5 1.5" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Mental Health &amp; Neurological
+      </div>
+      <div id="meds-mental"></div>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12L7 2l5 10" stroke="#f5c842" stroke-width="1.2" stroke-linejoin="round"/><path d="M4 9h6" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Other Photosensitizing Conditions
+      </div>
+      <div id="meds-other"></div>
+    </div>
+
+    <div class="hpcard">
+      <div class="hpcard-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h7M2 10h5" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Additional notes for your doctor
+      </div>
+      <textarea class="hpnotes" id="hpnotes" placeholder="Add any other medications, conditions, or personal notes that may affect sun sensitivity..." onchange="saveNotes()"></textarea>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+
+</div><!-- end body -->
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="ni active" id="ni-scan" onclick="goTo('scan')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="4" stroke="#f5c842" stroke-width="1.3"/><path d="M11 2v2M11 18v2M2 11h2M18 11h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M14.4 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span class="nl">Scan</span>
+  </div>
+  <div class="ni" id="ni-history" onclick="goTo('history')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" opacity=".45"><rect x="3" y="3" width="6.5" height="6.5" rx="1.5" stroke="#f5c842" stroke-width="1.2"/><rect x="12.5" y="3" width="6.5" height="6.5" rx="1.5" stroke="#f5c842" stroke-width="1.2"/><rect x="3" y="12.5" width="6.5" height="6.5" rx="1.5" stroke="#f5c842" stroke-width="1.2"/><rect x="12.5" y="12.5" width="6.5" height="6.5" rx="1.5" stroke="#f5c842" stroke-width="1.2"/></svg>
+    <span class="nl">History</span>
+  </div>
+  <div class="ni" id="ni-outfit" onclick="goTo('outfit')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" opacity=".45"><path d="M11 3l2.2 4.5 5 .7-3.6 3.5.85 5L11 14.3l-4.45 2.4.85-5L3.8 8.2l5-.7z" stroke="#f5c842" stroke-width="1.2"/></svg>
+    <span class="nl">Outfit</span>
+  </div>
+  <div class="ni" id="ni-learn" onclick="goTo('learn')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" opacity=".45"><circle cx="11" cy="11" r="8" stroke="#f5c842" stroke-width="1.2"/><path d="M11 10v5M11 8v.5" stroke="#f5c842" stroke-width="1.3" stroke-linecap="round"/></svg>
+    <span class="nl">Learn</span>
+  </div>
+  <div class="ni" id="ni-health" onclick="goTo('health')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" opacity=".45"><path d="M11 4C8 4 5.5 6.5 5.5 9.5c0 4.5 5.5 9 5.5 9s5.5-4.5 5.5-9C16.5 6.5 14 4 11 4z" stroke="#f5c842" stroke-width="1.2"/><path d="M8.5 9.5h5M11 7v5" stroke="#f5c842" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span class="nl">Health</span>
+  </div>
+</nav>
+
+</div><!-- end app -->
+
+<script>
+// COLOR SWATCHES
+var COLORS = [
+  {n:'Black',       h:'#111111', m:15},
+  {n:'Dark Navy',   h:'#1a2a5e', m:13},
+  {n:'Dark Forest', h:'#1a3a20', m:12},
+  {n:'Dark Brown',  h:'#3a1f0a', m:11},
+  {n:'Burgundy',    h:'#5a1020', m:12},
+  {n:'Dark Purple', h:'#2d1a5e', m:11},
+  {n:'Dark Teal',   h:'#0f3a3a', m:11},
+  {n:'Dark Olive',  h:'#3a3a10', m:10},
+  {n:'Med Blue',    h:'#3060c0', m:6},
+  {n:'Med Green',   h:'#2a8a3a', m:5},
+  {n:'Med Red',     h:'#c03030', m:7},
+  {n:'Med Orange',  h:'#d06820', m:5},
+  {n:'Med Gray',    h:'#606060', m:4},
+  {n:'Med Tan',     h:'#a08050', m:3},
+  {n:'Med Pink',    h:'#d060a0', m:4},
+  {n:'Med Teal',    h:'#2090a0', m:5},
+  {n:'Light Blue',  h:'#88b8f0', m:-2},
+  {n:'Light Green', h:'#88d898', m:-2},
+  {n:'Light Yellow',h:'#f0e060', m:-3},
+  {n:'Light Pink',  h:'#f0b0c0', m:-3},
+  {n:'Light Gray',  h:'#c0c0c0', m:-4},
+  {n:'Peach',       h:'#f0c890', m:-3},
+  {n:'Cream',       h:'#f5f0dc', m:-5},
+  {n:'White',       h:'#f5f5f5', m:-6}
+];
+
+// SKIN TYPES (Fitzpatrick)
+var SKIN = [
+  {l:'Type I',   d:'Always burns, never tans',       n:'Red hair, freckles, very pale', sw:'#fde8d8', med:200,  spf:50},
+  {l:'Type II',  d:'Burns easily, tans minimally',   n:'Fair skin, light hair',         sw:'#f5d0b0', med:250,  spf:30},
+  {l:'Type III', d:'Sometimes burns, tans slowly',   n:'Medium skin, any hair',         sw:'#e8b888', med:300,  spf:30},
+  {l:'Type IV',  d:'Rarely burns, tans well',        n:'Olive or light brown skin',     sw:'#c89060', med:450,  spf:15},
+  {l:'Type V',   d:'Very rarely burns',              n:'Brown skin',                    sw:'#a06840', med:600,  spf:15},
+  {l:'Type VI',  d:'Almost never burns',             n:'Dark brown or black skin',      sw:'#6a3820', med:1000, spf:15}
+];
+
+// PICKER OPTIONS
+var OPTS = {
+  fabric:    {t:'Fabric type',   o:['Cotton','Polyester','Nylon','Linen','Denim','Wool','Silk','Spandex / Lycra','Synthetic blend','Bamboo','Modal','Tencel','Fleece','Terry cloth','Velvet','Canvas']},
+  stretch:   {t:'Stretch',       o:['Tight / Stretched','Normal','Relaxed / Loose']},
+  condition: {t:'Condition',     o:['Dry - New','Dry - Worn / Faded','Wet - New','Wet - Worn']},
+  layers:    {t:'Layers',        o:['Single','Double','Triple or more']},
+  garment:   {t:'Garment type',  o:['Shirt','T-shirt','Long sleeve','Jacket / Coat','Pants','Shorts','Hat / Cap','Wide-brim hat','Swimwear','Dress / Skirt','Gloves','Socks','Hoodie','Tank top','Other']},
+  fit:       {t:'Fit on body',   o:['Very tight','Slim','Regular','Loose / Oversized']}
+};
+
+var state = {
+  hasImg: false,
+  colorIdx: 1,
+  skinIdx: 1,
+  inputs: {fabric:'Cotton', stretch:'Normal', condition:'Dry - New', layers:'Single', garment:'Shirt', fit:'Regular'},
+  history: [],
+  outfit: [],
+  lastUpf: 0, lastMoe: 0, lastLo: 0, lastHi: 0, lastGrade: null, lastTip: ''
+};
+
+var UV_INDEX = 8;
+var TITLES = {scan:'AegisSun', history:'History', outfit:'Outfit Score', learn:'Sun Safety', health:'Health Profile'};
+
+// MEDICATION DATA
+// mult = exposure time multiplier (0.25 = reduce to 25% of normal, 0.5 = half, etc.)
+// severity: 'extreme' | 'high' | 'moderate'
+var MEDS = {
+  immune: [
+    {id:'methotrexate',  lbl:'Methotrexate',          sub:'Rheumatoid arthritis, psoriasis, cancer', mult:0.2,  sev:'extreme', note:'Severely increases UV sensitivity. Avoid prolonged sun exposure entirely on treatment days.'},
+    {id:'cyclosporine',  lbl:'Cyclosporine',           sub:'Organ transplant, autoimmune conditions', mult:0.25, sev:'extreme', note:'Increases skin cancer risk significantly. Strict sun protection required at all times.'},
+    {id:'azathioprine',  lbl:'Azathioprine (Imuran)',  sub:'Transplant, lupus, IBD',                 mult:0.25, sev:'extreme', note:'Long-term use greatly increases UV sensitivity and skin cancer risk.'},
+    {id:'mycophenolate', lbl:'Mycophenolate (CellCept)',sub:'Transplant, autoimmune',               mult:0.3,  sev:'extreme', note:'Photosensitivity risk is high. Use maximum sun protection daily.'},
+    {id:'tacrolimus',    lbl:'Tacrolimus (Prograf)',   sub:'Transplant, eczema (topical)',           mult:0.3,  sev:'extreme', note:'Strongly immunosuppressive. Sun exposure should be minimized.'},
+    {id:'chemo',         lbl:'Chemotherapy (general)', sub:'Cancer treatment',                       mult:0.15, sev:'extreme', note:'Most chemotherapy agents cause severe photosensitivity. Consult your oncologist for specific guidance.'},
+    {id:'fluorouracil',  lbl:'5-Fluorouracil (5-FU)',  sub:'Cancer treatment, skin cream',          mult:0.1,  sev:'extreme', note:'Extreme photosensitivity. Avoid all sun exposure during treatment.'}
+  ],
+  antibiotic: [
+    {id:'doxycycline',   lbl:'Doxycycline',            sub:'Infections, acne, Lyme disease',        mult:0.4,  sev:'high',    note:'One of the most photosensitizing antibiotics. Avoid midday sun.'},
+    {id:'tetracycline',  lbl:'Tetracycline',            sub:'Bacterial infections, acne',            mult:0.45, sev:'high',    note:'Significant photosensitivity. Sunscreen and protective clothing required.'},
+    {id:'ciprofloxacin', lbl:'Ciprofloxacin (Cipro)',  sub:'Bacterial infections, UTI',             mult:0.55, sev:'moderate',note:'Moderate photosensitivity risk. Limit sun exposure.'},
+    {id:'levofloxacin',  lbl:'Levofloxacin (Levaquin)',sub:'Bacterial infections, pneumonia',       mult:0.5,  sev:'moderate',note:'Moderate photosensitivity. Use SPF 30+ sunscreen outdoors.'},
+    {id:'sulfonamides',  lbl:'Sulfonamides (Bactrim)',  sub:'UTI, ear infections',                  mult:0.45, sev:'high',    note:'High photosensitivity risk. Avoid prolonged sun exposure.'},
+    {id:'trimethoprim',  lbl:'Trimethoprim',            sub:'UTI, respiratory infections',          mult:0.5,  sev:'moderate',note:'Moderate photosensitivity. Protective clothing recommended.'}
+  ],
+  cardio: [
+    {id:'amiodarone',    lbl:'Amiodarone',              sub:'Heart rhythm disorders',               mult:0.2,  sev:'extreme', note:'Extreme and persistent photosensitivity. Can cause a blue-grey skin discoloration. Avoid sun exposure.'},
+    {id:'hydrochlorothiazide', lbl:'Hydrochlorothiazide (HCTZ)', sub:'Blood pressure, edema',     mult:0.45, sev:'high',    note:'Common blood pressure drug with significant photosensitivity risk.'},
+    {id:'furosemide',    lbl:'Furosemide (Lasix)',      sub:'Fluid retention, heart failure',       mult:0.5,  sev:'moderate',note:'Moderate photosensitivity. Use sunscreen when outdoors.'},
+    {id:'diltiazem',     lbl:'Diltiazem',               sub:'Blood pressure, angina',               mult:0.55, sev:'moderate',note:'Some photosensitivity reported. Limit midday sun exposure.'},
+    {id:'quinidine',     lbl:'Quinidine',               sub:'Heart rhythm disorders',               mult:0.4,  sev:'high',    note:'High photosensitivity risk. Avoid prolonged sun exposure.'},
+    {id:'statins',       lbl:'Statins (general)',        sub:'Cholesterol (Lipitor, Crestor, etc.)', mult:0.7,  sev:'moderate',note:'Mild photosensitivity in some patients. Standard sun protection is sufficient for most people.'}
+  ],
+  mental: [
+    {id:'chlorpromazine',lbl:'Chlorpromazine (Thorazine)',sub:'Schizophrenia, bipolar',            mult:0.2,  sev:'extreme', note:'Extreme photosensitivity. Can cause severe sunburn and long-term pigmentation changes.'},
+    {id:'haloperidol',   lbl:'Haloperidol (Haldol)',    sub:'Schizophrenia, psychosis',             mult:0.35, sev:'high',    note:'High photosensitivity. Avoid prolonged sun exposure.'},
+    {id:'ssri',          lbl:'SSRIs (general)',          sub:'Depression, anxiety (Prozac, Zoloft, Lexapro, etc.)', mult:0.6, sev:'moderate', note:'Mild photosensitivity in some patients. Use standard sun protection.'},
+    {id:'lithium',       lbl:'Lithium',                 sub:'Bipolar disorder',                     mult:0.5,  sev:'moderate',note:'Moderate photosensitivity. Use sunscreen and limit midday exposure.'},
+    {id:'carbamazepine', lbl:'Carbamazepine (Tegretol)',sub:'Epilepsy, bipolar, nerve pain',       mult:0.4,  sev:'high',    note:'High photosensitivity. Protective clothing and sunscreen required.'},
+    {id:'lamotrigine',   lbl:'Lamotrigine (Lamictal)',  sub:'Epilepsy, bipolar disorder',           mult:0.55, sev:'moderate',note:'Moderate photosensitivity reported. Use SPF 30+ sunscreen.'},
+    {id:'tricyclic',     lbl:'Tricyclic antidepressants',sub:'Depression, nerve pain (Elavil, etc.)',mult:0.45,sev:'high',   note:'High photosensitivity. Avoid prolonged sun exposure, especially around noon.'}
+  ],
+  other: [
+    {id:'isotretinoin',  lbl:'Isotretinoin (Accutane)', sub:'Severe acne',                         mult:0.3,  sev:'extreme', note:'Extreme photosensitivity. No prolonged sun exposure. SPF 50+ required at all times.'},
+    {id:'retinoids',     lbl:'Topical retinoids',        sub:'Acne, anti-aging (Retin-A, tretinoin)',mult:0.45,sev:'high',   note:'Significant photosensitivity especially on treated skin. Apply at night; use sunscreen daily.'},
+    {id:'nsaids',        lbl:'NSAIDs (Naproxen, Piroxicam)', sub:'Pain, inflammation',             mult:0.55, sev:'moderate',note:'Some NSAIDs, especially piroxicam, cause moderate photosensitivity.'},
+    {id:'lupus',         lbl:'Lupus (SLE)',              sub:'Autoimmune condition',                mult:0.2,  sev:'extreme', note:'UV light triggers lupus flares. Strict avoidance of sun exposure is essential.'},
+    {id:'porphyria',     lbl:'Porphyria',                sub:'Metabolic disorder',                  mult:0.1,  sev:'extreme', note:'Extreme UV sensitivity. Even brief sun exposure can cause severe reactions.'},
+    {id:'xeroderma',     lbl:'Xeroderma Pigmentosum',   sub:'Genetic DNA repair disorder',         mult:0.05, sev:'extreme', note:'Extreme UV sensitivity. Near-complete sun avoidance is medically required.'},
+    {id:'vitiligo',      lbl:'Vitiligo',                 sub:'Skin pigmentation condition',         mult:0.35, sev:'high',    note:'Depigmented patches have no UV protection. High SPF and full coverage required on affected areas.'},
+    {id:'albinism',      lbl:'Albinism',                 sub:'Melanin deficiency',                  mult:0.15, sev:'extreme', note:'No melanin protection. Extreme photosensitivity. Maximum protection at all times outdoors.'}
+  ]
+};
+
+// HEALTH PROFILE STATE
+// ─── LIFETIME UV EXPOSURE ENGINE ────────────────────────────────────────────
+
+// UV climatology data: average annual UV index by rough latitude band
+// Source: WHO/UNEP UV Index data, NASA POWER averages
+var UV_BY_LAT = [
+  {lat:0,  uv:12.5}, // Equatorial (Ecuador, Kenya, Singapore)
+  {lat:10, uv:12.0}, // Tropical (Mexico City, Mumbai, Lagos)
+  {lat:20, uv:11.0}, // Subtropical (Miami, Riyadh, Taipei)
+  {lat:25, uv:10.0}, // Sub-tropical (Cairo, Houston, Shanghai)
+  {lat:30, uv:9.0},  // Warm temperate (Los Angeles, Tokyo, Sydney)
+  {lat:35, uv:8.0},  // Temperate (Atlanta, Madrid, Beijing)
+  {lat:40, uv:7.0},  // Mid-temperate (New York, Rome, Istanbul)
+  {lat:45, uv:6.0},  // Cool temperate (Portland, Milan, Montreal)
+  {lat:50, uv:5.0},  // Northern (London, Berlin, Vancouver)
+  {lat:55, uv:4.0},  // Sub-arctic (Moscow, Stockholm, Calgary)
+  {lat:60, uv:3.0},  // Arctic fringe (Oslo, Helsinki, Anchorage)
+  {lat:70, uv:2.0},  // Arctic
+  {lat:90, uv:1.0}
+];
+
+// Common cities with approximate latitude for autocomplete / lookup
+var CITY_LAT = {
+  'miami':25.8,'houston':29.8,'los angeles':34.0,'phoenix':33.4,'san diego':32.7,
+  'dallas':32.8,'atlanta':33.7,'new orleans':30.0,'orlando':28.5,'tampa':27.9,
+  'new york':40.7,'chicago':41.9,'philadelphia':40.0,'boston':42.4,'detroit':42.3,
+  'seattle':47.6,'portland':45.5,'denver':39.7,'salt lake city':40.8,'las vegas':36.2,
+  'minneapolis':44.9,'cleveland':41.5,'cincinnati':39.1,'st louis':38.6,'kansas city':39.1,
+  'san francisco':37.8,'sacramento':38.6,'nashville':36.2,'memphis':35.1,'charlotte':35.2,
+  'raleigh':35.8,'richmond':37.5,'washington dc':38.9,'baltimore':39.3,'pittsburgh':40.4,
+  'london':51.5,'paris':48.9,'berlin':52.5,'madrid':40.4,'rome':41.9,'amsterdam':52.4,
+  'stockholm':59.3,'oslo':59.9,'helsinki':60.2,'moscow':55.8,'warsaw':52.2,'vienna':48.2,
+  'sydney':-33.9,'melbourne':-37.8,'brisbane':-27.5,'perth':-31.9,'auckland':-36.9,
+  'tokyo':35.7,'beijing':39.9,'shanghai':31.2,'hong kong':22.3,'singapore':1.3,
+  'dubai':25.2,'mumbai':19.1,'delhi':28.6,'bangkok':13.8,'jakarta':-6.2,
+  'cairo':30.1,'nairobi':-1.3,'lagos':6.5,'johannesburg':-26.2,'casablanca':33.6,
+  'toronto':43.7,'montreal':45.5,'vancouver':49.2,'calgary':51.0,'edmonton':53.5,
+  'mexico city':19.4,'bogota':4.7,'lima':-12.0,'santiago':-33.5,'buenos aires':-34.6,
+  'sao paulo':-23.5,'rio de janeiro':-22.9,
+  // Tennessee specifics
+  'nashville':36.2,'memphis':35.1,'knoxville':35.9,'chattanooga':35.0,'dickson':36.1,
+  'clarksville':36.5,'murfreesboro':35.8,'jackson':35.6
+};
+
+var lifetimeProfile = {
+  age: null,
+  locations: [] // [{city, years, lat, uvAvg}]
+};
+
+var lifetimeDoseScore = 0;   // 0-100 scale
+var lifetimeDnaMult = 1.0;   // multiplier applied to DNA threshold (higher damage = lower threshold)
+var lifetimeMedBonus = 0;    // points added to score from medication equivalent damage
+
+function getUVForLat(lat) {
+  var abslat = Math.abs(lat);
+  for (var i = 0; i < UV_BY_LAT.length - 1; i++) {
+    if (abslat <= UV_BY_LAT[i+1].lat) {
+      var t = (abslat - UV_BY_LAT[i].lat) / (UV_BY_LAT[i+1].lat - UV_BY_LAT[i].lat);
+      return UV_BY_LAT[i].uv + t * (UV_BY_LAT[i+1].uv - UV_BY_LAT[i].uv);
+    }
+  }
+  return 1.5;
+}
+
+function guessLatFromCity(cityStr) {
+  var key = cityStr.toLowerCase().trim();
+  if (CITY_LAT[key] !== undefined) return CITY_LAT[key];
+  // Partial match
+  for (var k in CITY_LAT) {
+    if (k.indexOf(key) >= 0 || key.indexOf(k) >= 0) return CITY_LAT[k];
+  }
+  return null;
+}
+
+function addLocationEntry(city, years) {
+  var list = document.getElementById('uvloc-list');
+  if (!list) return;
+  var idx = list.children.length;
+  var row = document.createElement('div');
+  row.className = 'uvloc-item';
+  row.innerHTML =
+    '<input type="text" placeholder="City or region" value="'+(city||'')+'" oninput="onLifetimeChange()" data-loc-city>' +
+    '<input type="number" min="1" max="110" placeholder="Yrs" value="'+(years||'')+'" oninput="onLifetimeChange()" data-loc-years style="text-align:center">' +
+    '<div class="uvloc-remove" onclick="removeLocation(this)">&#215;</div>';
+  list.appendChild(row);
+  onLifetimeChange();
+}
+
+function removeLocation(btn) {
+  btn.parentElement.remove();
+  onLifetimeChange();
+}
+
+function calcLifetimeDose() {
+  var age = parseInt(document.getElementById('uvlife-age').value, 10);
+  var hasAge = !isNaN(age) && age >= 1;
+
+  var OUTDOOR_HRS = 2.0;
+  var MAX_DOSE = 80 * 10 * 365 * OUTDOOR_HRS * 1.5 * 2.0;
+  var skinSensitivity = [2.0, 1.7, 1.4, 1.1, 0.8, 0.6][state.skinIdx] || 1.0;
+
+  var totalDose = 0;
+  var locations = [];
+
+  if (hasAge) {
+    var list = document.getElementById('uvloc-list');
+    var rows = list ? list.querySelectorAll('.uvloc-item') : [];
+    var totalYears = 0;
+
+    rows.forEach(function(row) {
+      var cityInp = row.querySelector('[data-loc-city]');
+      var yearsInp = row.querySelector('[data-loc-years]');
+      if (!cityInp || !yearsInp) return;
+      var city = cityInp.value.trim();
+      var yrs  = parseFloat(yearsInp.value) || 0;
+      if (!city || yrs <= 0) return;
+      var lat = guessLatFromCity(city);
+      if (lat === null) lat = 40;
+      var uvAvg = getUVForLat(lat);
+      locations.push({city:city, years:yrs, lat:lat, uvAvg:uvAvg});
+      totalYears += yrs;
+    });
+
+    if (locations.length === 0) {
+      locations.push({city:'current', years:age, lat:36, uvAvg: UV_INDEX || 7});
+      totalYears = age;
+    }
+    if (totalYears < age) {
+      locations.push({city:'other', years:age - totalYears, lat:40, uvAvg:7});
+    }
+
+    locations.forEach(function(loc) {
+      var childYears = 0, adultYears = 0;
+      if (age <= 18) {
+        childYears = loc.years;
+      } else {
+        var childFrac = 18 / age;
+        childYears = loc.years * childFrac;
+        adultYears = loc.years * (1 - childFrac);
+      }
+      totalDose += (childYears * loc.uvAvg * 365 * OUTDOOR_HRS * 1.5) +
+                   (adultYears * loc.uvAvg * 365 * OUTDOOR_HRS * 1.0);
+    });
+
+    totalDose *= skinSensitivity;
+  }
+
+  // Medication equivalent damage - works even without age
+  var medEquivDose = 0;
+  var activeMeds = getActiveMeds();
+  var locUVAvg = locations.length > 0 ? locations[0].uvAvg : (UV_INDEX || 7);
+  activeMeds.forEach(function(med) {
+    var ampFactor = Math.min(10, 1 / Math.max(0.05, med.mult));
+    var extraFactor = ampFactor - 1;
+    var estYears = med.sev === 'extreme' ? 2.0 : med.sev === 'high' ? 1.0 : 0.5;
+    medEquivDose += extraFactor * locUVAvg * 365 * OUTDOOR_HRS * estYears * skinSensitivity;
+  });
+
+  lifetimeMedBonus = Math.min(50, Math.round((medEquivDose / MAX_DOSE) * 100));
+  lifetimeDoseScore = Math.min(100, Math.round(((totalDose + medEquivDose) / MAX_DOSE) * 100));
+  lifetimeDnaMult = Math.max(0.45, 1.0 - (lifetimeDoseScore / 100) * 0.55);
+}
+function onLifetimeChange() {
+  // Persist age
+  var ageEl = document.getElementById('uvlife-age');
+  if (ageEl) lifetimeProfile.age = parseInt(ageEl.value, 10) || null;
+  // Persist locations
+  var list = document.getElementById('uvloc-list');
+  lifetimeProfile.locations = [];
+  if (list) {
+    list.querySelectorAll('.uvloc-item').forEach(function(row) {
+      var city  = (row.querySelector('[data-loc-city]') || {}).value || '';
+      var years = parseFloat((row.querySelector('[data-loc-years]') || {}).value) || 0;
+      if (city && years > 0) lifetimeProfile.locations.push({city:city, years:years});
+    });
+  }
+  calcLifetimeDose();
+  renderLifetimeScore();
+  updateExpCard();
+}
+
+function renderLifetimeScore() {
+  var scoreEl = document.getElementById('uvlife-score');
+  var valEl   = document.getElementById('uvlife-score-val');
+  var tierEl  = document.getElementById('uvlife-tier');
+  var statusEl= document.getElementById('uvlife-status');
+  var barEl   = document.getElementById('uvlife-bar');
+  var fillEl  = document.getElementById('uvlife-bar-fill');
+
+  var age = parseInt(document.getElementById('uvlife-age').value, 10);
+  if (!scoreEl || (isNaN(age) && lifetimeDoseScore === 0)) {
+    if (scoreEl) scoreEl.style.display = 'none';
+    if (barEl)   barEl.style.display   = 'none';
+    return;
+  }
+
+  scoreEl.style.display = 'flex';
+  barEl.style.display   = 'block';
+
+  var s = lifetimeDoseScore;
+  var color, tier, status;
+
+  if (s < 20) {
+    color = '#6dd68c'; tier = 'Low accumulated damage';
+    status = "Your skin has relatively low UV history. Standard sun protection is sufficient.";
+  } else if (s < 40) {
+    color = '#f5c842'; tier = 'Moderate accumulated damage';
+    status = "Some UV history accumulated. DNA damage thresholds are slightly reduced. Consistent SPF 30+ recommended.";
+  } else if (s < 60) {
+    color = '#e08020'; tier = 'Elevated accumulated damage';
+    status = "Significant lifetime UV dose. Your skin's repair capacity is reduced. SPF 50+ and UPF clothing strongly advised.";
+  } else if (s < 80) {
+    color = '#ff7060'; tier = 'High accumulated damage';
+    status = "High lifetime UV exposure. Cancer risk is meaningfully elevated. Annual dermatology screening recommended.";
+  } else {
+    color = '#ff4030'; tier = 'Very high accumulated damage';
+    status = "Very high lifetime UV dose. Significant skin cancer risk. Strict daily sun protection and regular dermatology screening essential.";
+  }
+
+  valEl.textContent   = s + '%';
+  valEl.style.color   = color;
+  tierEl.textContent  = tier;
+  tierEl.style.color  = color;
+  statusEl.textContent = status;
+  fillEl.style.width  = s + '%';
+  fillEl.style.background = color;
+
+  // Show medication bonus if any
+  var medBonusEl = document.getElementById('uvlife-med-bonus');
+  if (!medBonusEl) {
+    medBonusEl = document.createElement('div');
+    medBonusEl.id = 'uvlife-med-bonus';
+    medBonusEl.style.cssText = 'font-size:10px;margin-top:5px;line-height:1.5';
+    statusEl.parentNode.insertBefore(medBonusEl, statusEl.nextSibling);
+  }
+  if (lifetimeMedBonus > 0) {
+    medBonusEl.style.color = 'rgba(255,112,96,0.85)';
+    medBonusEl.innerHTML = '&#9651; +' + lifetimeMedBonus + ' pts from photosensitizing medications — these amplify DNA damage per session, equivalent to additional UV-years of exposure.';
+  } else {
+    medBonusEl.innerHTML = '';
+  }
+
+  // ── DERMATOLOGY SCREENING RECOMMENDATION ──────────────────────────────────
+  var screenEl = document.getElementById('uvlife-screening');
+  if (!screenEl) {
+    screenEl = document.createElement('div');
+    screenEl.id = 'uvlife-screening';
+    barEl.parentNode.insertBefore(screenEl, barEl.nextSibling);
+  }
+
+  var hasAge = !isNaN(age) && age >= 1;
+  var screening = null;
+
+  // Determine screening recommendation based on score, age, and med status
+  var hasSevMed = getActiveMeds().some(function(m){ return m.sev === 'extreme' || m.sev === 'high'; });
+
+  if (s >= 80 || (s >= 60 && hasAge && age >= 50) || (hasSevMed && s >= 40)) {
+    screening = {
+      urgency: 'urgent',
+      color: '#ff5040',
+      bg: 'rgba(255,80,60,0.08)',
+      border: 'rgba(255,80,60,0.3)',
+      icon: '!',
+      headline: 'Annual dermatology screening strongly recommended',
+      body: 'Your accumulated UV damage' + (hasSevMed ? ' and photosensitizing medications' : '') + ' place you at meaningfully elevated skin cancer risk. A full-body skin check by a dermatologist can detect actinic keratoses — precancerous lesions that are directly visible evidence of DNA damage trying to become cancer. Catching and removing them is the most effective intervention available.',
+      action: 'Ask your doctor for a referral to a dermatologist if you have not had a full-body skin check in the past 12 months.'
+    };
+  } else if (s >= 40 || (hasAge && age >= 50 && s >= 20) || hasSevMed) {
+    screening = {
+      urgency: 'recommended',
+      color: '#f5c842',
+      bg: 'rgba(245,200,66,0.07)',
+      border: 'rgba(245,200,66,0.25)',
+      icon: 'i',
+      headline: 'Periodic dermatology screening recommended',
+      body: 'At your current damage level' + (hasAge && age >= 50 ? ' and age' : '') + ', dermatologists recommend a full-body skin check every 1–2 years. Actinic keratoses — rough, scaly patches that are the most common precancerous skin lesions — are treatable in minutes when caught early.',
+      action: 'If you have not had a skin check in the past 2 years, consider scheduling one.'
+    };
+  } else if (s >= 20) {
+    screening = {
+      urgency: 'routine',
+      color: '#6dd68c',
+      bg: 'rgba(109,214,140,0.06)',
+      border: 'rgba(109,214,140,0.2)',
+      icon: 'i',
+      headline: 'Routine skin awareness advised',
+      body: 'Your accumulated damage is currently low, but developing the habit of checking your skin monthly for new or changing spots is the single most effective form of early detection.',
+      action: 'Use the ABCDE rule: Asymmetry, Border, Color, Diameter, Evolving. See a doctor for any spot that changes.'
+    };
+  }
+
+  if (screening) {
+    screenEl.style.cssText = 'margin-top:10px;background:'+screening.bg+';border:0.5px solid '+screening.border+';border-radius:10px;padding:10px 11px';
+    screenEl.innerHTML =
+      '<div style="display:flex;align-items:flex-start;gap:8px">' +
+        '<div style="width:18px;height:18px;border-radius:50%;background:'+screening.color+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;margin-top:1px">'+screening.icon+'</div>' +
+        '<div>' +
+          '<div style="font-size:11px;font-weight:600;color:'+screening.color+';margin-bottom:4px">'+screening.headline+'</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.6);line-height:1.55;margin-bottom:5px">'+screening.body+'</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.4);line-height:1.5;font-style:italic">'+screening.action+'</div>' +
+        '</div>' +
+      '</div>';
+  } else {
+    screenEl.innerHTML = '';
+    screenEl.style.cssText = '';
+  }
+  // ── END SCREENING RECOMMENDATION ───────────────────────────────────────────
+}
+
+// ─── END LIFETIME UV ENGINE ──────────────────────────────────────────────────
+
+var healthProfile = {
+  active: {},   // med id -> true/false
+  notes: ''
+};
+
+function saveNotes() {
+  healthProfile.notes = document.getElementById('hpnotes').value;
+}
+
+function buildMedSection(containerId, meds) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  meds.forEach(function(med) {
+    var row = document.createElement('div');
+    row.className = 'hptoggle-row';
+    var isOn = healthProfile.active[med.id] ? true : false;
+    var sevColor = med.sev === 'extreme' ? 'var(--red)' : med.sev === 'high' ? 'var(--amber)' : 'var(--gold)';
+    var sevLabel = med.sev === 'extreme' ? 'Extreme sensitivity' : med.sev === 'high' ? 'High sensitivity' : 'Moderate sensitivity';
+    row.innerHTML =
+      '<div class="hptoggle-info">' +
+        '<div class="hptoggle-lbl">'+med.lbl+'</div>' +
+        '<div class="hptoggle-sub">'+med.sub+'</div>' +
+        '<div class="hptoggle-sub warn" style="color:'+sevColor+';display:'+(isOn?'block':'none')+'" id="warn-'+med.id+'">'+sevLabel+' &mdash; '+med.note+'</div>' +
+      '</div>' +
+      '<div class="toggle'+(isOn?' on':'')+'" id="tog-'+med.id+'"><div class="toggle-knob"></div></div>';
+    row.querySelector('.toggle').onclick = function() {
+      healthProfile.active[med.id] = !healthProfile.active[med.id];
+      var tog = document.getElementById('tog-'+med.id);
+      var warn = document.getElementById('warn-'+med.id);
+      tog.classList.toggle('on', healthProfile.active[med.id]);
+      warn.style.display = healthProfile.active[med.id] ? 'block' : 'none';
+      // Recalculate lifetime dose with updated med list
+      calcLifetimeDose();
+      renderLifetimeScore();
+      updateExpCard();
+    };
+    el.appendChild(row);
+  });
+}
+
+function buildHealthScreen() {
+  buildMedSection('meds-immune',    MEDS.immune);
+  buildMedSection('meds-antibiotic',MEDS.antibiotic);
+  buildMedSection('meds-cardio',    MEDS.cardio);
+  buildMedSection('meds-mental',    MEDS.mental);
+  buildMedSection('meds-other',     MEDS.other);
+  document.getElementById('hpnotes').value = healthProfile.notes;
+  // Restore age
+  var ageEl = document.getElementById('uvlife-age');
+  if (ageEl && lifetimeProfile.age) ageEl.value = lifetimeProfile.age;
+  // Restore location entries
+  var list = document.getElementById('uvloc-list');
+  if (list && list.children.length === 0) {
+    lifetimeProfile.locations.forEach(function(loc) {
+      addLocationEntry(loc.city, loc.years);
+    });
+    if (lifetimeProfile.locations.length === 0) addLocationEntry('', '');
+  }
+  renderLifetimeScore();
+}
+
+function getActiveMeds() {
+  var all = MEDS.immune.concat(MEDS.antibiotic, MEDS.cardio, MEDS.mental, MEDS.other);
+  return all.filter(function(m){ return healthProfile.active[m.id]; });
+}
+
+function getMedMultiplier() {
+  var active = getActiveMeds();
+  if (!active.length) return 1.0;
+  // Use the most restrictive (lowest) multiplier
+  var lowest = 1.0;
+  active.forEach(function(m){ if (m.mult < lowest) lowest = m.mult; });
+  return lowest;
+}
+// NAV
+function goTo(name) {
+  var sc = document.getElementById('sc-'+name);
+  var ni = document.getElementById('ni-'+name);
+  if (!sc || !ni) return;
+  document.querySelectorAll('.sc').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active')});
+  sc.classList.add('active');
+  ni.classList.add('active');
+  var title = TITLES[name] || name;
+  var hdrtitle = document.getElementById('hdrtitle');
+  if (hdrtitle) hdrtitle.textContent = title;
+  var body = document.querySelector('.body');
+  if (body) body.scrollTop = 0;
+  if (name === 'outfit') renderOutfit();
+  if (name === 'history') renderHistory();
+  if (name === 'health') buildHealthScreen();
+}
+
+// COLOR BAR
+function buildColorBar() {
+  var bar = document.getElementById('cbar');
+  bar.innerHTML = '';
+  COLORS.forEach(function(c, i) {
+    var sw = document.createElement('div');
+    sw.className = 'csw' + (i === state.colorIdx ? ' sel' : '');
+    sw.style.background = c.h;
+    if (c.m <= -4) sw.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,.2)';
+    sw.onclick = function() { selectColor(i); };
+    bar.appendChild(sw);
+  });
+  document.getElementById('cselname').textContent = COLORS[state.colorIdx].n;
+}
+function selectColor(i) {
+  state.colorIdx = i;
+  document.querySelectorAll('.csw').forEach(function(s,j){s.classList.toggle('sel',j===i)});
+  document.getElementById('cselname').textContent = COLORS[i].n;
+}
+
+// FILE HANDLING
+function handleFile(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var z = document.getElementById('camz');
+    var img = document.getElementById('pimg');
+    img.src = e.target.result;
+    z.classList.add('has-img','scanning');
+    document.getElementById('abtn').disabled = false;
+    state.hasImg = true;
+    setTimeout(function(){z.classList.remove('scanning')}, 3000);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// PICKER MODAL
+function openPicker(key) {
+  var cfg = OPTS[key];
+  document.getElementById('mtitle').textContent = cfg.t;
+  var opts = document.getElementById('mopts');
+  opts.innerHTML = '';
+  cfg.o.forEach(function(opt) {
+    var row = document.createElement('div');
+    row.className = 'mopt';
+    var sel = state.inputs[key] === opt;
+    row.innerHTML = '<span class="moptlbl">'+opt+'</span>'+(sel?'<span class="moptsel">&#10003;</span>':'');
+    row.onclick = function() {
+      state.inputs[key] = opt;
+      document.getElementById('v-'+key).textContent = opt;
+      closePicker();
+    };
+    opts.appendChild(row);
+  });
+  document.getElementById('moverlay').classList.add('open');
+}
+function closePicker(e) {
+  if (!e || e.target === document.getElementById('moverlay'))
+    document.getElementById('moverlay').classList.remove('open');
+}
+
+// UPF CALCULATION
+function calcUPF() {
+  var s = 20;
+  s += COLORS[state.colorIdx].m;
+  var fab = {Polyester:12,Nylon:10,Denim:15,Wool:9,Cotton:5,Silk:2,Linen:0,'Spandex / Lycra':-2,'Synthetic blend':8,Bamboo:4,Modal:3,Tencel:3,Fleece:10,'Terry cloth':6,Velvet:8,Canvas:14};
+  s += (fab[state.inputs.fabric] || 5);
+  s += ({'Tight / Stretched':-8,'Normal':0,'Relaxed / Loose':2}[state.inputs.stretch] || 0);
+  s += ({'Dry - New':0,'Dry - Worn / Faded':-6,'Wet - New':-10,'Wet - Worn':-16}[state.inputs.condition] || 0);
+  s += ({'Single':0,'Double':12,'Triple or more':20}[state.inputs.layers] || 0);
+  s += ({'T-shirt':-2,'Shorts':-5,'Swimwear':-8,'Hat / Cap':2,'Wide-brim hat':6,'Tank top':-5,'Dress / Skirt':-2,'Gloves':3,'Socks':2,'Hoodie':5,'Jacket / Coat':8}[state.inputs.garment] || 0);
+  s += ({'Very tight':-6,'Slim':-2,'Regular':0,'Loose / Oversized':3}[state.inputs.fit] || 0);
+  return Math.max(5, Math.min(50, Math.round(s)));
+}
+
+function calcMOE() {
+  var m = 8;
+  if (state.inputs.condition.indexOf('Wet') >= 0) m += 4;
+  if (COLORS[state.colorIdx].m <= -4) m += 3;
+  if (state.inputs.condition.indexOf('Worn') >= 0) m += 2;
+  if (state.inputs.stretch === 'Tight / Stretched') m += 2;
+  return Math.min(15, m);
+}
+
+function getGrade(upf) {
+  if (upf >= 40) return {l:'Excellent', c:'be', col:'var(--green)', p:Math.min(100,75+(upf-40)*2.5)};
+  if (upf >= 25) return {l:'High',      c:'bh', col:'var(--gold)',  p:50+((upf-25)/15)*25};
+  if (upf >= 15) return {l:'Moderate',  c:'bm', col:'var(--amber)', p:25+((upf-15)/10)*25};
+  return              {l:'Low',         c:'bl', col:'var(--red)',   p:(upf/15)*25};
+}
+
+function getTip(upf) {
+  if (upf >= 40) return 'Great protection! Add SPF 30+ sunscreen on face, neck, and hands.';
+  if (state.inputs.condition.indexOf('Wet') >= 0) return 'Wet fabric loses major protection. Consider UPF-certified swimwear.';
+  if (COLORS[state.colorIdx].m < 0) return 'A darker color could push this into the Excellent range (UPF 40+).';
+  if (upf >= 25) return 'Adding a second layer or switching to denim or canvas could boost protection significantly.';
+  return 'Limited protection. Look for UPF-labeled clothing or apply sunscreen under covered areas on high UV days.';
+}
+
+function buildFactors(upf) {
+  var factors = [];
+  var c = COLORS[state.colorIdx];
+  var cc = c.m >= 10 ? 'sh' : c.m >= 4 ? 'sm' : c.m >= 0 ? 'sl' : 'sn';
+  var cs = c.m >= 10 ? '+High' : c.m >= 4 ? '+Mod' : c.m >= 0 ? '+Low' : '-Low';
+  var cd = c.m >= 4 ? 'var(--gold)' : c.m >= 0 ? 'var(--amber)' : 'var(--red)';
+  factors.push({dot:cd, txt:c.n+' color', sc:cs, cls:cc});
+  var hf = ['Polyester','Nylon','Denim','Synthetic blend','Fleece','Canvas'];
+  var lf = ['Linen','Spandex / Lycra'];
+  if (hf.indexOf(state.inputs.fabric) >= 0) factors.push({dot:'var(--gold)',txt:state.inputs.fabric+' (good UV blocker)',sc:'+High',cls:'sh'});
+  else if (lf.indexOf(state.inputs.fabric) >= 0) factors.push({dot:'var(--red)',txt:state.inputs.fabric+' (lower UV blocking)',sc:'-Low',cls:'sn'});
+  else factors.push({dot:'var(--amber)',txt:state.inputs.fabric+' fabric',sc:'+Mod',cls:'sm'});
+  if (state.inputs.stretch === 'Tight / Stretched') factors.push({dot:'var(--red)',txt:'Stretched fabric opens the weave',sc:'-High',cls:'sn'});
+  else if (state.inputs.stretch === 'Relaxed / Loose') factors.push({dot:'var(--green)',txt:'Loose fit preserves weave',sc:'+Mod',cls:'sh'});
+  if (state.inputs.condition.indexOf('Wet') >= 0) factors.push({dot:'var(--red)',txt:'Wet fabric significantly reduces UPF',sc:'-High',cls:'sn'});
+  else if (state.inputs.condition.indexOf('Worn') >= 0) factors.push({dot:'var(--amber)',txt:'Worn / faded fabric loses protection',sc:'-Mod',cls:'sl'});
+  if (state.inputs.layers !== 'Single') factors.push({dot:'var(--green)',txt:state.inputs.layers+' layers',sc:'+High',cls:'sh'});
+  else factors.push({dot:'var(--amber)',txt:'Single layer only',sc:'-Mod',cls:'sl'});
+  if (state.inputs.fit === 'Very tight' || state.inputs.fit === 'Slim') factors.push({dot:'var(--amber)',txt:'Close fit stretches weave slightly',sc:'-Low',cls:'sl'});
+  else if (state.inputs.fit === 'Loose / Oversized') factors.push({dot:'var(--green)',txt:'Oversized fit maintains weave density',sc:'+Mod',cls:'sh'});
+  return factors;
+}
+
+// ANALYZE
+function doAnalyze() {
+  if (!state.hasImg) return;
+  document.getElementById('loverlay').classList.add('active');
+  setTimeout(showResult, 2000);
+}
+
+function showResult() {
+  document.getElementById('loverlay').classList.remove('active');
+  var upf = calcUPF();
+  var moe = calcMOE();
+  var grade = getGrade(upf);
+  var lo = Math.max(5, upf - moe);
+  var hi = Math.min(50, upf + moe);
+  var pct = Math.round((1 - 1/upf) * 100);
+
+  document.getElementById('upfn').textContent = upf;
+  document.getElementById('upfd').textContent = 'Blocks ~'+pct+'% of UV rays';
+  document.getElementById('upfd').style.color = grade.col;
+  document.getElementById('upfr').textContent = 'Estimated range: UPF '+lo+' to '+hi+' (\u00b1'+moe+')';
+  var badge = document.getElementById('upfbadge');
+  badge.textContent = grade.l;
+  badge.className = 'badge '+grade.c;
+
+  setTimeout(function() {
+    document.getElementById('mfill').style.width = grade.p + '%';
+    var lop = getGrade(lo).p;
+    var hip = getGrade(hi).p;
+    var band = document.getElementById('mband');
+    band.style.left = lop + '%';
+    band.style.width = Math.max(2, hip - lop) + '%';
+  }, 80);
+
+  var fl = document.getElementById('flist');
+  fl.innerHTML = '';
+  buildFactors(upf).forEach(function(f) {
+    var r = document.createElement('div');
+    r.className = 'frow';
+    r.innerHTML = '<div class="fdot" style="background:'+f.dot+'"></div><span class="ftxt">'+f.txt+'</span><span class="fsc '+f.cls+'">'+f.sc+'</span>';
+    fl.appendChild(r);
+  });
+
+  state.lastUpf = upf; state.lastMoe = moe; state.lastLo = lo; state.lastHi = hi;
+  state.lastGrade = grade; state.lastTip = getTip(upf);
+
+  document.getElementById('rpanel').classList.add('vis');
+
+  var record = {
+    id: Date.now(), upf:upf, moe:moe, lo:lo, hi:hi,
+    grade:grade.l, badgeCls:grade.c, col:grade.col,
+    swHex: COLORS[state.colorIdx].h,
+    fabric: state.inputs.fabric, garment: state.inputs.garment,
+    imgSrc: document.getElementById('pimg').src,
+    date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})
+  };
+  state.history.unshift(record);
+  setTimeout(function(){document.getElementById('rpanel').scrollIntoView({behavior:'smooth',block:'nearest'})},100);
+}
+
+// HISTORY
+function renderHistory() {
+  var list = document.getElementById('hlist');
+  if (!state.history.length) {
+    list.innerHTML = '<div class="empty">No scans yet.<br>Photograph a garment to get started.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  state.history.forEach(function(item) {
+    var g = getGrade(item.upf);
+    var d = document.createElement('div');
+    d.className = 'hitem';
+    d.innerHTML =
+      '<img class="hsw" src="'+item.imgSrc+'" style="object-fit:cover" onerror="this.style.background=\''+item.swHex+'\'">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="hname">'+item.garment+' &middot; '+item.fabric+'</div>' +
+        '<div class="hdate">'+item.date+'</div>' +
+        '<div style="font-size:9px;color:var(--t3);margin-top:1px">Range: '+item.lo+'&ndash;'+item.hi+' UPF (&plusmn;'+item.moe+')</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;margin-right:6px">' +
+        '<div class="hupf" style="color:'+g.col+'">'+item.upf+'</div>' +
+        '<div class="hgrd" style="color:'+g.col+'">'+g.l+'</div>' +
+      '</div>' +
+      '<div class="delbtn" data-id="'+item.id+'">' +
+        '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 1l9 9M10 1L1 10" stroke="#ff7060" stroke-width="1.5" stroke-linecap="round"/></svg>' +
+      '</div>';
+    d.querySelector('.delbtn').onclick = function(e) {
+      e.stopPropagation();
+      state.history = state.history.filter(function(i){return i.id !== item.id});
+      state.outfit  = state.outfit.filter(function(i){return i.id !== item.id});
+      renderHistory();
+    };
+    d.addEventListener('click', function(e) {
+      if (e.target.closest('.delbtn')) return;
+      addOutfit(item); goTo('outfit');
+    });
+    list.appendChild(d);
+  });
+  var n = document.createElement('div');
+  n.style.cssText='text-align:center;color:var(--t3);font-size:10px;padding:12px';
+  n.textContent='Tap to add to outfit  x to delete';
+  list.appendChild(n);
+}
+
+function deleteHist(e, id) {
+  e.stopPropagation();
+  state.history = state.history.filter(function(i){return i.id !== id});
+  state.outfit  = state.outfit.filter(function(i){return i.id !== id});
+  renderHistory();
+}
+
+// OUTFIT
+function addOutfit(item) {
+  if (!state.outfit.find(function(i){return i.id===item.id})) state.outfit.push(item);
+}
+
+function renderOutfit() {
+  var list = document.getElementById('glist');
+  list.innerHTML = '';
+  if (!state.outfit.length) {
+    var btn = document.createElement('button');
+    btn.className = 'addg'; btn.onclick = goScan;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="#f5c842" stroke-width="1.3" stroke-linecap="round" opacity=".7"/></svg> Scan a garment to add it here';
+    list.appendChild(btn);
+    document.getElementById('oscore').textContent = '--';
+    document.getElementById('osub').textContent = 'Add garments below';
+    document.getElementById('omfill').style.width = '0%';
+    return;
+  }
+  var avg = state.outfit.reduce(function(s,i){return s+i.upf},0) / state.outfit.length;
+  if (state.outfit.length > 1) avg = Math.min(50, avg * 1.15);
+  avg = Math.round(avg);
+  var g = getGrade(avg);
+  document.getElementById('oscore').textContent = avg;
+  document.getElementById('oscore').style.color = g.col;
+  document.getElementById('osub').textContent = 'UPF ' + g.l + ' Coverage';
+  document.getElementById('osub').style.color = g.col;
+  setTimeout(function(){document.getElementById('omfill').style.width = g.p+'%'},80);
+  state.outfit.forEach(function(item) {
+    var ig = getGrade(item.upf);
+    var d = document.createElement('div');
+    d.className = 'gitem';
+    d.innerHTML =
+      '<img class="gsw" src="'+item.imgSrc+'" style="object-fit:cover" onerror="this.style.background=\''+item.swHex+'\'">' +
+      '<div style="flex:1;min-width:0"><div class="gname">'+item.garment+'</div><div class="gsub">'+item.fabric+' &middot; UPF '+item.upf+'</div></div>' +
+      '<div><div class="gnum" style="color:'+ig.col+'">'+item.upf+'</div><div class="ggrade" style="color:'+ig.col+'">'+ig.l+'</div></div>';
+    d.onclick = function() {
+      state.outfit = state.outfit.filter(function(i){return i.id!==item.id});
+      renderOutfit();
+    };
+    list.appendChild(d);
+  });
+  var n = document.createElement('div');
+  n.style.cssText='text-align:center;color:var(--t3);font-size:10px;padding:4px';
+  n.textContent='Tap item to remove';
+  list.appendChild(n);
+}
+
+function saveOutfit() {
+  if (!state.outfit.length) { alert('Add at least one garment first.'); return; }
+  alert('Outfit saved!');
+}
+function shareOutfit() {
+  var score = document.getElementById('oscore').textContent;
+  if (score === '--') { alert('Add garments first.'); return; }
+  if (navigator.share) navigator.share({title:'My AegisSun Outfit',text:'My outfit has UPF '+score+' -- analyzed with AegisSun!'});
+  else alert('My outfit has UPF '+score+' -- analyzed with AegisSun!');
+}
+
+// ADVISORY
+function fmtTime(mins) {
+  if (!mins || mins <= 0) return '< 1 min';
+  if (mins >= 480) return 'Several hours';
+  if (mins >= 60) {
+    var h = Math.floor(mins/60), m = mins%60;
+    return m > 0 ? h+'h '+m+'m' : h+' hr';
+  }
+  return mins+' min';
+}
+
+function buildSkinGrid() {
+  var grid = document.getElementById('stgrid');
+  grid.innerHTML = '';
+  SKIN.forEach(function(s, i) {
+    var btn = document.createElement('div');
+    btn.className = 'stbtn' + (i===state.skinIdx ? ' sel' : '');
+    btn.innerHTML = '<div class="stsw" style="background:'+s.sw+'"></div><div class="stlbl">'+s.l+'<br><span style="opacity:.55;font-size:8px">'+s.d.split(',')[0]+'</span></div>';
+    btn.onclick = function() {
+      state.skinIdx = i;
+      document.querySelectorAll('.stbtn').forEach(function(b,j){b.classList.toggle('sel',j===i)});
+      updateExpCard();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function uvLabel(uv) {
+  if (uv <= 2)  return uv+' - Low';
+  if (uv <= 5)  return uv+' - Moderate';
+  if (uv <= 7)  return uv+' - High';
+  if (uv <= 10) return uv+' - Very High';
+  return uv+' - Extreme';
+}
+
+function onUVChange(val) {
+  var v = parseInt(val, 10);
+  if (isNaN(v) || v < 1) v = 1;
+  if (v > 20) v = 20;
+  UV_INDEX = v;
+  var tag = document.getElementById('uvrow-tag');
+  if (tag) tag.innerHTML = uvLabel(v);
+  // Also update the header UV pill
+  var uvtxt = document.querySelector('.uvtxt');
+  if (uvtxt) uvtxt.innerHTML = 'UV '+v+' &middot; '+(v<=2?'Low':v<=5?'Moderate':v<=7?'High':v<=10?'Very High':'Extreme');
+  updateExpCard();
+}
+
+function updateExpCard() {
+  var skin = SKIN[state.skinIdx];
+  var upf  = state.lastUpf || 1;
+  var medMult = getMedMultiplier();
+  var uv   = UV_INDEX;
+  var IND  = 0.4; // indirect UV fraction
+
+  // Calculate all exposure times (minutes)
+  var rows = [
+    { lbl:'Bare skin - direct sun',   mins: Math.round(skin.med * medMult / (uv * 1.5)),              color:'#ff7060', group:'bare'  },
+    { lbl:'Bare skin - open shade',   mins: Math.round(skin.med * medMult / (uv * 1.5 * IND)),        color:'#e08020', group:'bare'  },
+    { lbl:'SPF 30 - direct sun',      mins: Math.round(skin.med * medMult * 30 / (uv * 1.5)),         color:'#f5c842', group:'spf'   },
+    { lbl:'SPF 30 - open shade',      mins: Math.round(skin.med * medMult * 30 / (uv * 1.5 * IND)),   color:'#f5da80', group:'spf'   },
+    { lbl:'SPF 50 - direct sun',      mins: Math.round(skin.med * medMult * 50 / (uv * 1.5)),         color:'#6dd68c', group:'spf'   },
+    { lbl:'SPF 50 - open shade',      mins: Math.round(skin.med * medMult * 50 / (uv * 1.5 * IND)),   color:'#a0eab8', group:'spf'   },
+    { lbl:'UPF '+upf+' - direct sun', mins: Math.round(skin.med * medMult * upf / (uv * 1.5)),        color:'#7ec8f0', group:'upf'   },
+    { lbl:'UPF '+upf+' - open shade', mins: Math.round(skin.med * medMult * upf / (uv * 1.5 * IND)),  color:'#b0dff8', group:'upf'   }
+  ];
+
+  // Store for other uses
+  state.expRows = rows;
+
+  drawCombinedGraph();
+  renderExpTimeDisplay(rows, skin, medMult, upf);
+
+  // Note
+  var medNote = medMult < 1.0 ? ' Medications reduce tolerance by '+Math.round((1-medMult)*100)+'%.' : '';
+  var note = skin.l+' ('+skin.n+')'+medNote;
+  var el = document.getElementById('expnote');
+  if (el) el.textContent = note;
+}
+
+function renderExpTimeDisplay(rows, skin, medMult, upf) {
+  var el = document.getElementById('expTimeDisplay');
+  if (!el) return;
+
+  // Determine active SPF (exposed skin protection)
+  var activeSPF = null;
+  [50,30,15,0].forEach(function(s){ if (spfActive[s] && activeSPF===null) activeSPF=s; });
+
+  // Determine active UPF (clothed skin protection) - use customUpfValue directly
+  var activeUPF = customUpfValue; // 0 = None
+
+  // Condition
+  var activeCond = 'dry';
+  if (condActive.wet) activeCond = 'wet';
+  else if (condActive.heat) activeCond = 'heat';
+  var condLabel = activeCond === 'wet' ? 'Wet / Sweat' : activeCond === 'heat' ? 'Heat' : 'Dry';
+
+  // Condition degradation factor (affects sunscreen only)
+  var condDegFactor = activeCond === 'wet' ? 0.5 : activeCond === 'heat' ? 0.7 : 1.0;
+
+  var IND = 0.4; // indirect UV fraction in shade
+  var baseMed = skin.med * medMult;
+  var uv = UV_INDEX;
+  // DNA threshold: baseline 1/3 of MED, reduced by lifetime accumulated damage
+  var DNA_FRACTION = 0.33 * lifetimeDnaMult;
+
+  function timeColor(mins) {
+    if (mins < 15) return '#ff5040';
+    if (mins < 45) return '#e08020';
+    if (mins < 120) return '#f5c842';
+    return '#6dd68c';
+  }
+  function dnaColor(mins) {
+    if (mins < 8)  return '#ff5040';
+    if (mins < 20) return '#e08020';
+    if (mins < 60) return '#f5c842';
+    return '#a78bfa';
+  }
+  function fmt(mins) { return mins >= 480 ? 'All day' : fmtTime(mins); }
+
+  // --- EXPOSED SKIN (SPF) ---
+  var spfMult = (activeSPF !== null && activeSPF > 0) ? activeSPF : 1;
+  var spfCondFactor = (activeSPF !== null && activeSPF > 0) ? condDegFactor : 1.0;
+  var spfDirectMins    = Math.round(baseMed * spfMult * spfCondFactor / (uv * 1.5));
+  var spfShadeMins     = Math.round(baseMed * spfMult * spfCondFactor / (uv * 1.5 * IND));
+  var spfDirectDnaMins = Math.round(baseMed * DNA_FRACTION * spfMult * spfCondFactor / (uv * 1.5));
+  var spfShadeDnaMins  = Math.round(baseMed * DNA_FRACTION * spfMult * spfCondFactor / (uv * 1.5 * IND));
+  var spfLabel = (activeSPF !== null && activeSPF > 0) ? 'SPF '+activeSPF : 'No sunscreen';
+  var spfDirectColor = timeColor(spfDirectMins);
+  var spfShadeColor  = timeColor(spfShadeMins);
+  var reapplyMins = activeCond === 'wet' ? 60 : activeCond === 'heat' ? 90 : 120;
+  var showReapply = activeSPF !== null && activeSPF > 0 && spfDirectMins > 120;
+
+  // --- CLOTHED SKIN (UPF) ---
+  var upfCondFactor = activeCond === 'wet' ? 0.55 : 1.0;
+  var upfMult = (activeUPF > 0) ? activeUPF : 1;
+  var upfDirectMins    = Math.round(baseMed * upfMult * upfCondFactor / (uv * 1.5));
+  var upfShadeMins     = Math.round(baseMed * upfMult * upfCondFactor / (uv * 1.5 * IND));
+  var upfDirectDnaMins = Math.round(baseMed * DNA_FRACTION * upfMult * upfCondFactor / (uv * 1.5));
+  var upfShadeDnaMins  = Math.round(baseMed * DNA_FRACTION * upfMult * upfCondFactor / (uv * 1.5 * IND));
+  var upfLabel = (activeUPF > 0) ? 'UPF '+activeUPF+' garment' : 'No garment';
+  var upfDirectColor = timeColor(upfDirectMins);
+  var upfShadeColor  = timeColor(upfShadeMins);
+
+  function miniCard(topLabel, directMins, shadeMins, dc, sc, directDna, shadeDna) {
+    return '<div style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,180,60,0.12);border-radius:10px;padding:10px 8px;flex:1;min-width:0">' +
+
+      // Header label
+      '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;text-align:center">'+topLabel+'</div>' +
+
+      // CANCER RISK — top, prominent
+      '<div style="background:rgba(167,139,250,0.08);border:0.5px solid rgba(167,139,250,0.25);border-radius:7px;padding:7px 6px;margin-bottom:7px">' +
+        '<div style="font-size:8px;color:rgba(167,139,250,0.9);text-transform:uppercase;letter-spacing:.7px;text-align:center;margin-bottom:4px;font-weight:600">Cancer risk onset</div>' +
+        '<div style="display:flex;gap:5px">' +
+          '<div style="flex:1;text-align:center">' +
+            '<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:1px">Direct</div>' +
+            '<div style="font-size:22px;font-weight:700;color:'+dnaColor(directDna)+';line-height:1;letter-spacing:-.4px">'+fmt(directDna)+'</div>' +
+          '</div>' +
+          '<div style="width:0.5px;background:rgba(167,139,250,0.15);align-self:stretch"></div>' +
+          '<div style="flex:1;text-align:center">' +
+            '<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:1px">Shade</div>' +
+            '<div style="font-size:22px;font-weight:700;color:'+dnaColor(shadeDna)+';line-height:1;letter-spacing:-.4px">'+fmt(shadeDna)+'</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      // BURN LIMIT — below, secondary
+      '<div style="font-size:7px;color:rgba(255,100,80,0.55);text-transform:uppercase;letter-spacing:.6px;text-align:center;margin-bottom:3px">Burn limit</div>' +
+      '<div style="display:flex;gap:5px">' +
+        '<div style="flex:1;text-align:center">' +
+          '<div style="font-size:8px;color:rgba(255,255,255,0.22);margin-bottom:1px">Direct</div>' +
+          '<div style="font-size:15px;font-weight:600;color:'+dc+';line-height:1;letter-spacing:-.2px;opacity:0.8">'+fmt(directMins)+'</div>' +
+        '</div>' +
+        '<div style="width:0.5px;background:rgba(255,255,255,0.06);align-self:stretch"></div>' +
+        '<div style="flex:1;text-align:center">' +
+          '<div style="font-size:8px;color:rgba(255,255,255,0.22);margin-bottom:1px">Shade</div>' +
+          '<div style="font-size:15px;font-weight:600;color:'+sc+';line-height:1;letter-spacing:-.2px;opacity:0.8">'+fmt(shadeMins)+'</div>' +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+  }
+
+  el.innerHTML =
+    '<div style="margin:10px 0 8px;border-bottom:0.5px solid rgba(255,180,60,0.15);padding-bottom:12px">' +
+      '<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.1px;font-weight:600;color:rgba(255,255,255,0.35);margin-bottom:8px">Safe exposure time</div>' +
+
+      '<div style="display:flex;gap:7px;margin-bottom:6px">' +
+        miniCard('Exposed skin &mdash; '+spfLabel, spfDirectMins, spfShadeMins, spfDirectColor, spfShadeColor, spfDirectDnaMins, spfShadeDnaMins) +
+        miniCard('Clothed skin &mdash; '+upfLabel, upfDirectMins, upfShadeMins, upfDirectColor, upfShadeColor, upfDirectDnaMins, upfShadeDnaMins) +
+      '</div>' +
+      '<div style="display:flex;align-items:flex-start;gap:6px;background:rgba(167,139,250,0.06);border:0.5px solid rgba(167,139,250,0.2);border-radius:7px;padding:7px 9px;margin-bottom:8px">' +
+        '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="6" cy="6" r="5" stroke="#a78bfa" stroke-width="1"/><path d="M6 4v3M6 8.5v.5" stroke="#a78bfa" stroke-width="1.1" stroke-linecap="round"/></svg>' +
+        '<span style="font-size:10px;color:rgba(167,139,250,0.8);line-height:1.5">UV damages DNA in skin cells — including the p53 tumor suppressor gene — well before burning occurs. This threshold marks where cancer risk begins accumulating, even on cloudy days.' + (lifetimeDoseScore > 0 ? ' <strong style="color:rgba(167,139,250,1)">Your lifetime UV history shifts this threshold earlier.</strong>' : '') + '</span>' +
+      '</div>' +
+
+      // Context strip
+      '<div style="background:rgba(255,180,60,0.05);border:0.5px solid rgba(255,180,60,0.18);border-radius:7px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px">' +
+        '<span style="font-size:10px;color:rgba(255,255,255,0.5)">'+skin.l+'</span>' +
+        '<span style="font-size:10px;color:rgba(255,255,255,0.2)">&middot;</span>' +
+        '<span style="font-size:10px;color:rgba(255,255,255,0.5)">UV '+uv+'</span>' +
+        '<span style="font-size:10px;color:rgba(255,255,255,0.2)">&middot;</span>' +
+        '<span style="font-size:10px;color:rgba(255,255,255,0.5)">'+condLabel+'</span>' +
+      '</div>' +
+
+      // Reapply reminder
+      (showReapply ?
+        '<div style="display:flex;align-items:center;gap:7px;background:rgba(245,200,66,0.07);border:0.5px solid rgba(245,200,66,0.22);border-radius:7px;padding:7px 10px">' +
+          '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#f5c842" stroke-width="1"/><path d="M6 3.5v3l1.5 1" stroke="#f5c842" stroke-width="1" stroke-linecap="round"/></svg>' +
+          '<span style="font-size:10px;color:rgba(245,200,66,0.8)">Reapply sunscreen every '+fmtTime(reapplyMins)+(activeCond==='wet'?' — wet accelerates breakdown':activeCond==='heat'?' — heat speeds degradation':'')+'</span>' +
+        '</div>'
+      : '') +
+
+    '</div>';
+}
+
+function drawCombinedGraph() {
+  var canvas = document.getElementById('combinedCanvas');
+  if (!canvas || !canvas.getContext) return;
+
+  var skin = SKIN[state.skinIdx];
+  var upf  = state.lastUpf || calcUPF();
+  var medMult = getMedMultiplier();
+  var uv   = UV_INDEX;
+  var IND  = 0.4;
+
+  // Scale for x-axis (hours)
+  var scaleMax = 8;
+
+  // Layout
+  var lblW = 28;
+  var padR = 4;
+  var padT = 28;
+  var curveSectionH = 220;
+  var totalH = padT + curveSectionH + 30;
+
+  // Resize canvas to fit
+  canvas.height = totalH;
+  var W = canvas.width, H = canvas.height;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  var gW = W - lblW - padR;
+
+  function tx(h) { return lblW + Math.min(h / scaleMax, 1) * gW; }
+  function curveY(pct) { return padT + curveSectionH - (pct / 100) * curveSectionH; }
+
+  // -- SECTION 1: SPF DEGRADATION CURVES --
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('SUNSCREEN PROTECTION OVER TIME', lblW, padT - 10);
+
+  // Danger zone (below 50%)
+  ctx.fillStyle = 'rgba(255,50,30,0.12)';
+  ctx.fillRect(lblW, curveY(50), gW, curveY(0) - curveY(50));
+  ctx.fillStyle = 'rgba(109,214,140,0.05)';
+  ctx.fillRect(lblW, padT, gW, curveY(50) - padT);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.5;
+  [0,25,50,75,100].forEach(function(p) {
+    ctx.beginPath(); ctx.moveTo(lblW, curveY(p)); ctx.lineTo(lblW+gW, curveY(p)); ctx.stroke();
+  });
+
+  // Y labels (curves)
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+  [0,50,100].forEach(function(p) {
+    ctx.fillText(p+'%', lblW-4, curveY(p)+4);
+  });
+
+  // 50% min threshold
+  ctx.strokeStyle = 'rgba(255,70,50,0.7)';
+  ctx.lineWidth = 1; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(lblW, curveY(50)); ctx.lineTo(lblW+gW, curveY(50)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255,80,60,0.7)';
+  ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('min. effective', lblW+2, curveY(50)-3);
+
+  // 2hr reapply line (shared across both panels)
+  if (scaleMax >= 2) {
+    var rx = tx(2);
+    ctx.strokeStyle = 'rgba(245,200,66,0.4)';
+    ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(rx, padT-12); ctx.lineTo(rx, H-20); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(245,200,66,0.7)';
+    ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Reapply', rx, padT-14);
+  }
+
+  // SPF curves
+  var legendItems = [];
+  var spfLevels = [0,15,30,50];
+  spfLevels.forEach(function(spf) {
+    if (!spfActive[spf]) return;
+    var color = CURVE_COLORS[spf];
+    var data = applyCondition(SPF_DATA[spf], 'dry');
+    // Fill
+    var fg = ctx.createLinearGradient(0, padT, 0, padT+curveSectionH);
+    fg.addColorStop(0, color+'40'); fg.addColorStop(1, 'rgba(255,50,30,0.08)');
+    ctx.beginPath();
+    ctx.moveTo(tx(data[0].t), curveY(data[0].p));
+    for (var i=1;i<data.length;i++) {
+      var cpx=tx((data[i-1].t+data[i].t)/2);
+      ctx.bezierCurveTo(cpx,curveY(data[i-1].p),cpx,curveY(data[i].p),tx(data[i].t),curveY(data[i].p));
+    }
+    ctx.lineTo(tx(data[data.length-1].t),curveY(0));
+    ctx.lineTo(tx(data[0].t),curveY(0));
+    ctx.closePath(); ctx.fillStyle=fg; ctx.fill();
+    // Line
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(tx(data[0].t),curveY(data[0].p));
+    for (var j=1;j<data.length;j++) {
+      var cpx2=tx((data[j-1].t+data[j].t)/2);
+      ctx.bezierCurveTo(cpx2,curveY(data[j-1].p),cpx2,curveY(data[j].p),tx(data[j].t),curveY(data[j].p));
+    }
+    ctx.stroke();
+    // Start dot + label
+    ctx.beginPath(); ctx.arc(tx(0),curveY(data[0].p),4,0,Math.PI*2);
+    ctx.fillStyle=color; ctx.fill();
+    ctx.fillStyle=color; ctx.font='bold 10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(spf===0?'None (bare)':'SPF '+spf, tx(0)+6, curveY(data[0].p)+4);
+    legendItems.push({color:color, label:'SPF '+spf});
+  });
+
+  // UPF flat line - show customUpfValue as a single line
+  if (customUpfValue > 0) {
+    var upfPct = Math.min(100, Math.round((1 - 1/customUpfValue) * 100));
+    var upfColor = customUpfValue >= 40 ? '#6dd68c' : customUpfValue >= 25 ? '#f5c842' : customUpfValue >= 15 ? '#e08020' : '#ff7060';
+    ctx.strokeStyle=upfColor; ctx.lineWidth=2; ctx.setLineDash([10,5]); ctx.globalAlpha=0.9;
+    ctx.beginPath(); ctx.moveTo(lblW, curveY(upfPct)); ctx.lineTo(lblW+gW, curveY(upfPct)); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=upfColor; ctx.font='bold 10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText('UPF '+(customUpfValue>=50?'50+':customUpfValue), lblW+gW-2, curveY(upfPct)-3);
+  }
+
+  // X axis labels at bottom of curve
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+  [0,1,2,3,4,6,8].forEach(function(t) {
+    if (t <= scaleMax) ctx.fillText(t+'h', tx(t), padT + curveSectionH + 14);
+  });
+
+  // Update legend HTML
+  var leg = document.getElementById('combinedLegend');
+  if (leg) {
+    leg.innerHTML = '';
+    legendItems.forEach(function(e) {
+      var row=document.createElement('div'); row.className='spfleg-row';
+      var dot=document.createElement('div'); dot.className='spfleg-dot';
+      dot.style.background=e.color;
+      var lbl=document.createElement('span'); lbl.textContent=e.label;
+      row.appendChild(dot); row.appendChild(lbl); leg.appendChild(row);
+    });
+    var extras=[
+      {color:'rgba(255,70,50,0.5)',label:'Below 50% effectiveness'},
+      {color:'rgba(245,200,66,0.6)',label:'2-hr reapply marker',dash:true}
+    ];
+    extras.forEach(function(e){
+      var row=document.createElement('div'); row.className='spfleg-row';
+      var dot=document.createElement('div'); dot.className='spfleg-dot';
+      if(e.dash){dot.style.background='none';dot.style.borderTop='2px dashed '+e.color;dot.style.height='0';dot.style.marginTop='5px';}
+      else dot.style.background=e.color;
+      var lbl=document.createElement('span'); lbl.textContent=e.label;
+      row.appendChild(dot); row.appendChild(lbl); leg.appendChild(row);
+    });
+  }
+}
+
+// SPF GRAPH STATE
+var UPF_LEVELS = [0, 15, 30, 50]; // legacy - dynamic UPF now handled via customUpfValue
+var UPF_COLORS = {0:'#ff4030', 10:'#ff7060', 15:'#e08020', 25:'#f0a030', 30:'#f5c842', 50:'#6dd68c'};
+var UPF_BASE_PCT = {0:0, 10:90, 15:93.3, 25:96, 30:96.7, 50:98};
+var customUpfValue = 0; // 0 = None; >0 = active UPF value
+var upfActive = {10:true, 15:true, 25:true, 30:true, 50:true};
+var upfCondActive = {dry:true, wet:false, stretch:false, worn:false};
+var UPF_COND = {
+  dry:     function(upf,t){ return 1.0-(t*0.005); },
+  wet:     function(upf,t){ return t===0?1.0:0.50-(t*0.01); },
+  stretch: function(upf,t){ return t===0?1.0:0.60-(t*0.008); },
+  worn:    function(upf,t){ return 0.70-(t*0.003); }
+};
+var UPF_COND_LABELS = {dry:'Dry', wet:'Wet', stretch:'Stretched', worn:'Worn / Faded'};
+var UPF_COND_DASH = {dry:[], wet:[4,2], stretch:[6,3], worn:[2,2]};
+function buildUPFData(upf, cond) {
+  var times = [0,0.5,1,1.5,2,3,4,5,6,8];
+  var basePct = UPF_BASE_PCT[upf];
+  return times.map(function(t) {
+    var mult = Math.max(0, UPF_COND[cond](upf,t));
+    return {t:t, p:Math.round(basePct*mult*10)/10};
+  });
+}
+function setUPFCondToggle(el, cond) {
+  upfCondActive[cond] = !upfCondActive[cond];
+  el.classList.toggle('active', upfCondActive[cond]);
+  drawCombinedGraph();
+}
+function goScan() { goTo('scan'); }
+var spfActive = {0: true, 15: false, 30: false, 50: false};
+var condActive = {dry: true, heat: false, wet: false};
+// UPF active in combined graph - set to match scanned garment UPF on open
+var upfActiveCombined = {0: true, 10: false, 15: false, 25: false, 30: false, 50: false}; // legacy compat
+
+// SPF curve data: [t_hours, pct_remaining] for dry conditions
+// Based on photostability research; SPF 15/30/50 share shape, differ in start and total duration
+var SPF_DATA = {
+  0:  [{t:0,p:100},{t:0.5,p:80},{t:1,p:60},{t:1.5,p:42},{t:2,p:28},{t:2.5,p:18},{t:3,p:11},{t:3.5,p:7},{t:4,p:4},{t:5,p:2},{t:6,p:1}],
+  15: [{t:0,p:93},{t:0.5,p:88},{t:1,p:80},{t:1.5,p:70},{t:2,p:58},{t:2.5,p:47},{t:3,p:38},{t:3.5,p:30},{t:4,p:23},{t:5,p:16},{t:6,p:11}],
+  30: [{t:0,p:97},{t:0.5,p:92},{t:1,p:85},{t:1.5,p:76},{t:2,p:65},{t:2.5,p:54},{t:3,p:44},{t:3.5,p:36},{t:4,p:29},{t:5,p:20},{t:6,p:14}],
+  50: [{t:0,p:98},{t:0.5,p:94},{t:1,p:88},{t:1.5,p:80},{t:2,p:70},{t:2.5,p:60},{t:3,p:50},{t:3.5,p:42},{t:4,p:35},{t:5,p:25},{t:6,p:18}]
+};
+// Condition multipliers applied per time point (accelerate degradation)
+var COND_MULT = {
+  dry:  function(t) { return 1.0; },
+  heat: function(t) { return Math.max(0, 1 - t * 0.08); },   // heat degrades ~8% per hour extra
+  wet:  function(t) { return Math.max(0, 1 - t * 0.22); }    // wet/sweat degrades ~22% per hour extra
+};
+var CURVE_COLORS = {0:'#ff5040', 15:'#7ec8f0', 30:'#f5c842', 50:'#6dd68c'};
+var COND_LABELS = {dry:'Dry', heat:'Heat', wet:'Wet / Sweat'};
+
+function applyCondition(baseData, condKey) {
+  return baseData.map(function(pt) {
+    var mult = COND_MULT[condKey](pt.t);
+    return {t: pt.t, p: Math.max(0, Math.round(pt.p * mult))};
+  });
+}
+
+function setSPFToggle(el, spf) {
+  spfActive[spf] = !spfActive[spf];
+  el.classList.toggle('active', spfActive[spf]);
+  updateExpCard();
+}
+
+function setCondToggle(el, cond) {
+  condActive[cond] = !condActive[cond];
+  el.classList.toggle('active', condActive[cond]);
+  updateExpCard();
+}
+
+function setUPFToggle(el, upf) {
+  // legacy - redirect to new system
+  setUPFCustom(upf);
+}
+
+function setUPFCustom(val) {
+  customUpfValue = val || 0;
+  // Update None button
+  var noneBtn = document.getElementById('upf-none-btn');
+  if (noneBtn) noneBtn.classList.toggle('active', customUpfValue === 0);
+  // Update scanned button
+  var scannedBtn = document.getElementById('upf-scanned-btn');
+  if (scannedBtn) scannedBtn.classList.toggle('active', customUpfValue > 0 && customUpfValue === (state.lastUpf||0));
+  // Update input
+  var inp = document.getElementById('upf-custom-input');
+  if (inp) inp.value = customUpfValue > 0 ? customUpfValue : '';
+  // Update legacy upfActiveCombined for graph curve display
+  Object.keys(upfActiveCombined).forEach(function(k){ upfActiveCombined[k] = false; });
+  // Find closest bracket for curve color
+  var bracket = 0;
+  if (customUpfValue >= 50) bracket = 50;
+  else if (customUpfValue >= 30) bracket = 30;
+  else if (customUpfValue >= 25) bracket = 25;
+  else if (customUpfValue >= 15) bracket = 15;
+  else if (customUpfValue >= 10) bracket = 10;
+  if (customUpfValue > 0 && upfActiveCombined.hasOwnProperty(bracket)) upfActiveCombined[bracket] = true;
+  updateExpCard();
+}
+
+function onUPFInputChange(val) {
+  var v = parseInt(val, 10);
+  if (isNaN(v) || v < 1) { setUPFCustom(0); return; }
+  if (v > 500) v = 500;
+  setUPFCustom(v);
+}
+
+
+
+function openAdvisory() {
+  try {
+  console.log('openAdvisory called');
+  var aoverlay = document.getElementById('aoverlay');
+  if (!aoverlay) { console.error('aoverlay not found'); return; }
+  console.log('aoverlay found');
+  // Always recalculate if grade is missing
+  if (!state.lastUpf || !state.lastGrade) {
+    state.lastUpf = calcUPF();
+    state.lastMoe = calcMOE();
+    state.lastLo = Math.max(5, state.lastUpf - state.lastMoe);
+    state.lastHi = Math.min(50, state.lastUpf + state.lastMoe);
+    state.lastGrade = getGrade(state.lastUpf);
+    state.lastTip = getTip(state.lastUpf);
+    console.log('calculated upf:', state.lastUpf, 'grade:', state.lastGrade);
+  }
+  var upf = state.lastUpf || 15;
+  var g = state.lastGrade || getGrade(upf);
+  console.log('upf:', upf, 'g:', g);
+  var pct = Math.round((1 - 1/upf)*100);
+  document.getElementById('asum').innerHTML =
+    'Estimated <strong style="color:'+g.col+'">UPF '+upf+' ('+g.l+')</strong> &mdash; range '+state.lastLo+'&ndash;'+state.lastHi+'<br>Blocks approximately <strong style="color:'+g.col+'">'+pct+'%</strong> of UV radiation';
+
+  // Medication impact block
+  var activeMeds = getActiveMeds();
+  var medBlock = document.getElementById('medimpact');
+  var medList = document.getElementById('medimpact-list');
+  if (activeMeds.length > 0) {
+    medBlock.style.display = 'block';
+    medList.innerHTML = '';
+    activeMeds.forEach(function(m) {
+      var row = document.createElement('div');
+      row.className = 'medimpact-row';
+      var pctReduc = Math.round((1 - m.mult) * 100);
+      row.innerHTML = '<div class="medimpact-dot"></div><span class="medimpact-txt"><strong>'+m.lbl+'</strong>: reduces safe exposure by '+pctReduc+'%. '+m.note+'</span>';
+      medList.appendChild(row);
+    });
+  } else {
+    medBlock.style.display = 'none';
+  }
+
+  buildSkinGrid();
+  // Sync UV input to current UV_INDEX
+  var uvinput = document.getElementById('uvinput');
+  if (uvinput) uvinput.value = UV_INDEX;
+  var uvtag = document.getElementById('uvrow-tag');
+  if (uvtag) uvtag.innerHTML = uvLabel(UV_INDEX);
+  updateExpCard();
+  var tips = [state.lastTip,'Exposed skin (face, neck, hands, feet) always needs sunscreen.'];
+  if (activeMeds.length > 0) tips.unshift('You have active photosensitizing medications. Your safe exposure times above have been adjusted accordingly.');
+  if (upf < 25) tips.push('Consider darker or denser fabric to improve protection.');
+  if (upf >= 40) tips.push('Excellent coverage. Still reapply sunscreen every 2 hours.');
+  tips.push('UV penetrates clouds -- protection matters even on overcast days.');
+  var tc = document.getElementById('atips');
+  tc.innerHTML = '';
+  tips.forEach(function(t) {
+    var r = document.createElement('div');
+    r.className = 'tiprow';
+    r.innerHTML = '<div class="tipdot"></div><span class="tiptxt">'+t+'</span>';
+    tc.appendChild(r);
+  });
+  // Sync UPF to scanned garment value (show scanned button, populate input)
+  var scannedUpf = state.lastUpf || 0;
+  var scannedBtn = document.getElementById('upf-scanned-btn');
+  var scannedVal = document.getElementById('upf-scanned-val');
+  if (scannedBtn) {
+    if (scannedUpf > 0) {
+      scannedBtn.style.display = '';
+      if (scannedVal) scannedVal.textContent = scannedUpf;
+    } else {
+      scannedBtn.style.display = 'none';
+    }
+  }
+  setUPFCustom(scannedUpf);
+  // Reset SPF to None on open
+  spfActive = {0: true, 15: false, 30: false, 50: false};
+  document.querySelectorAll('[data-spf]').forEach(function(el) {
+    var s = parseInt(el.getAttribute('data-spf'), 10);
+    el.classList.toggle('active', !!spfActive[s]);
+  });
+
+  console.log('about to open overlay');
+  document.getElementById('aoverlay').classList.add('open');
+  console.log('overlay opened, classes:', document.getElementById('aoverlay').className);
+  setTimeout(function() { drawCombinedGraph(); updateExpCard(); }, 80);
+  } catch(err) {
+    console.error('openAdvisory error:', err, err.stack);
+    // Force open even if something failed above
+    var ov = document.getElementById('aoverlay');
+    if (ov) ov.classList.add('open');
+  }
+}
+
+function closeAdv(e) {
+  if (e && e.target !== document.getElementById('aoverlay')) return;
+  document.getElementById('aoverlay').classList.remove('open');
+}
+function closeAdvDirect() { document.getElementById('aoverlay').classList.remove('open'); }
+
+// UV FETCH - Open-Meteo (free, no API key)
+var uvLocation = '';
+
+function setUVDisplay(uv, label, loc) {
+  UV_INDEX = uv;
+  uvLocation = loc || '';
+  var uvtxt = document.querySelector('.uvtxt');
+  var modeTag = (uvFetched && uvFetched.peak && uvFetched.peak > uvFetched.current)
+    ? (uvMode === 'peak' ? ' &middot; peak' : ' &middot; now') : '';
+  if (uvtxt) uvtxt.innerHTML = 'UV ' + uv + ' &middot; ' + label + (loc ? ' &middot; ' + loc : '') + modeTag;
+  var uvinput = document.getElementById('uvinput');
+  if (uvinput) uvinput.value = uv;
+  // Update source note in advisory
+  var note = document.getElementById('uv-source-note');
+  if (note) {
+    if (loc) {
+      note.textContent = 'Auto-detected — ' + loc + '. Tap the number above to override.';
+    } else {
+      note.textContent = 'Tap the number above to set manually.';
+    }
+  }
+  var uvtag = document.getElementById('uvrow-tag');
+  if (uvtag) uvtag.innerHTML = uvLabel(uv);
+}
+
+function uvLabelShort(uv) {
+  if (uv <= 2)  return 'Low';
+  if (uv <= 5)  return 'Moderate';
+  if (uv <= 7)  return 'High';
+  if (uv <= 10) return 'Very High';
+  return 'Extreme';
+}
+
+// Stores fetched UV values
+var uvFetched = { current: null, peak: null, city: '' };
+var uvMode = 'current'; // 'current' or 'peak'
+
+function setUVMode(mode) {
+  uvMode = mode;
+  var btnCur  = document.getElementById('uv-btn-current');
+  var btnPeak = document.getElementById('uv-btn-peak');
+  if (btnCur) {
+    btnCur.style.background  = mode === 'current' ? 'rgba(245,200,66,0.2)' : 'transparent';
+    btnCur.style.color       = mode === 'current' ? 'var(--gold)' : 'rgba(255,255,255,0.4)';
+  }
+  if (btnPeak) {
+    btnPeak.style.background = mode === 'peak' ? 'rgba(255,100,60,0.2)' : 'transparent';
+    btnPeak.style.color      = mode === 'peak' ? '#ff8060' : 'rgba(255,255,255,0.4)';
+  }
+  var val = mode === 'peak' ? uvFetched.peak : uvFetched.current;
+  if (val !== null) {
+    setUVDisplay(val, uvLabelShort(val), uvFetched.city);
+  }
+}
+
+function fetchUVFromCoords(lat, lon) {
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(4) +
+            '&longitude=' + lon.toFixed(4) +
+            '&hourly=uv_index&timezone=auto&forecast_days=1';
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var hourly = data.hourly;
+      if (!hourly || !hourly.uv_index || !hourly.time) throw new Error('bad data');
+
+      var now = new Date();
+      var todayPrefix = now.getFullYear() + '-' + pad2(now.getMonth()+1) + '-' + pad2(now.getDate());
+      var currentHour = todayPrefix + 'T' + pad2(now.getHours()) + ':00';
+
+      // Find current hour index
+      var curIdx = hourly.time.indexOf(currentHour);
+      if (curIdx < 0) curIdx = 0;
+
+      // Find today's peak UV (max across all today's hours)
+      var peakUV = 0;
+      hourly.time.forEach(function(t, i) {
+        if (t.indexOf(todayPrefix) === 0) {
+          peakUV = Math.max(peakUV, hourly.uv_index[i] || 0);
+        }
+      });
+
+      var city = uvLocation || '';
+      if (!city) {
+        city = (data.timezone || '').replace(/_/g, ' ').split('/').pop();
+      }
+
+      uvFetched.current = Math.max(1, Math.round(hourly.uv_index[curIdx]));
+      uvFetched.peak    = Math.max(1, Math.round(peakUV));
+      uvFetched.city    = city;
+
+      // Show toggle if current and peak differ meaningfully
+      var toggle = document.getElementById('uv-mode-toggle');
+      if (toggle) {
+        toggle.style.display = (uvFetched.peak > uvFetched.current) ? 'flex' : 'none';
+      }
+
+      // Update peak button label with actual value
+      var btnPeak = document.getElementById('uv-btn-peak');
+      if (btnPeak) btnPeak.textContent = 'Peak ' + uvFetched.peak;
+
+      // Display current by default
+      setUVMode(uvMode);
+      console.log('UV current:' + uvFetched.current + ' peak:' + uvFetched.peak + ' city:' + city);
+    })
+    .catch(function(err) {
+      console.warn('UV fetch failed:', err);
+    });
+}
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function fetchLiveUV() {
+  var uvtxt = document.querySelector('.uvtxt');
+  if (uvtxt) uvtxt.innerHTML = 'UV &middot; locating&hellip;';
+
+  // Step 1: Try GPS (best accuracy, requires permission)
+  function tryGPS() {
+    if (!navigator.geolocation) { tryIP(); return; }
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        fetchUVFromCoords(pos.coords.latitude, pos.coords.longitude);
+      },
+      function() { tryIP(); }, // denied or timed out — fall through to IP
+      { timeout: 6000, maximumAge: 300000 }
+    );
+  }
+
+  // Step 2: IP-based location — try two services for reliability
+  function tryIP() {
+    // Primary: open-meteo geocoding via ip-api (no key, generous limits)
+    fetch('https://ip-api.com/json/?fields=lat,lon,city,status')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.status === 'success' && d.lat && d.lon) {
+          uvLocation = d.city || '';
+          fetchUVFromCoords(d.lat, d.lon);
+        } else {
+          tryIP2();
+        }
+      })
+      .catch(function(){ tryIP2(); });
+  }
+
+  // Fallback IP service
+  function tryIP2() {
+    fetch('https://ipapi.co/json/')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.latitude && d.longitude) {
+          uvLocation = d.city || '';
+          fetchUVFromCoords(d.latitude, d.longitude);
+        } else {
+          showManualUV();
+        }
+      })
+      .catch(function(){ showManualUV(); });
+  }
+
+  function showManualUV() {
+    if (uvtxt) uvtxt.innerHTML = 'UV ' + UV_INDEX + ' &middot; tap to set';
+  }
+
+  tryGPS();
+}
+
+function uvInfo() { openAdvisory(); }
+function uvInfo_unused() {
+  var uv = UV_INDEX;
+  var label = uvLabelShort(uv);
+  var loc = uvLocation ? uvLocation : 'your location';
+  var advice = uv <= 2 ? 'Minimal risk. No special protection needed for most people.'
+    : uv <= 5 ? 'Moderate risk. Wear sunscreen if outside for extended periods.'
+    : uv <= 7 ? 'High risk. Wear SPF 30+, protective clothing, and seek shade midday.'
+    : uv <= 10 ? 'Very high risk. SPF 50+, UPF clothing, limit midday exposure.'
+    : 'Extreme risk. Avoid sun exposure 10am-4pm. Maximum protection required.';
+  alert('UV Index ' + uv + ' (' + label + ')\n' + loc + '\n\n' + advice + '\n\nYou can override the UV index in the advisory panel by tapping the UPF result.');
+}
+
+// DEMO
+function runDemo() {
+  state.hasImg = true;
+  var z = document.getElementById('camz');
+  z.classList.add('has-img','scanning');
+  document.getElementById('pimg').src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><defs><pattern id="p" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="4" height="8" fill="#1a2a5e"/><rect x="4" width="4" height="8" fill="#162050"/></pattern></defs><rect width="400" height="200" fill="url(#p)"/><text x="200" y="106" text-anchor="middle" font-family="sans-serif" font-size="12" fill="rgba(245,200,66,0.5)">Navy cotton shirt (demo)</text></svg>');
+  document.getElementById('pimg').style.display = 'block';
+  document.getElementById('abtn').disabled = false;
+  setTimeout(function(){z.classList.remove('scanning')}, 3000);
+}
+
+window.onload = function() {
+  buildColorBar();
+  setTimeout(runDemo, 300);
+  // Fetch live UV index automatically on load
+  setTimeout(fetchLiveUV, 800);
+};
+</script>
+</body>
+</html>
